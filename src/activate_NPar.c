@@ -2,8 +2,7 @@
 
 unsigned ACTIVATE(DataCell **dataGrid, Automata *CAList, unsigned row, 
                   unsigned col, unsigned aCt, char parent, char vent) {
-/*ACTIVATE_00 is a PARENT-CHILD RELATIONSHIP Activation Sceme! Parents-Child
-  Relationships are recorded.*/
+/*ACTIVATE_NPar is a PARENT-LESS Activation Sceme! No parents are recorded.*/
 
 /*Module: ACTIVATE
 	Accepts a location marker (row,column)
@@ -22,24 +21,25 @@ unsigned ACTIVATE(DataCell **dataGrid, Automata *CAList, unsigned row,
 	Active count should never be 0, so this can be used for error handling.
 */
 
-	/*If inactive:*/
+	//If inactive:
 	if(!dataGrid[row][col].active) {
 		
 		aCt++;
 		dataGrid[row][col].active = (unsigned) aCt;
 		
-		CAList[aCt].row       = (unsigned) row;
-		CAList[aCt].col       = (unsigned) col;
-		CAList[aCt].elev      = dataGrid[row][col].elev;
-		CAList[aCt].vent      = (char) vent;
-		CAList[aCt].lava_in   = 0.0;
-		CAList[aCt].lava_out  = 0.0;
-		CAList[aCt].thickness = (double) -1*dataGrid[row][col].residual;
-		CAList[aCt].parents   = (char) parent;
+		(CAList+aCt)->row       = row;
+		(CAList+aCt)->col       = col;
+		(CAList+aCt)->elev      = dataGrid[row][col].elev;
+		(CAList+aCt)->vent      = vent;
+		(CAList+aCt)->lava_in   = 0.0;
+		(CAList+aCt)->lava_out  = 0.0;
+		(CAList+aCt)->thickness = (double) -1*dataGrid[row][col].residual;
+		(CAList+aCt)->parents   = (char) 0;
 		
-		return(aCt); /*Return active count if just activated*/
+		return(aCt); //Return active count if just activated
 	}
 	
-	return(aCt); /*Return active count if cell was active; nothing changes*/
+	return(aCt); //Return active count if cell was active; nothing changes
 }
+
 

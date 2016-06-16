@@ -11,7 +11,7 @@ export flow_initializer  = 00
 export pulse             = 00
 export distribute        = 00
 export neighbor_ID       = 01
-export activate          = 01
+export activate          = Par
 export output            = 00
 
 
