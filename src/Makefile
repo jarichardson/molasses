@@ -8,11 +8,11 @@ else
 LIBS = -L$(GDAL_LIB_PATH) -lgdal -lm
 endif
 
-SRCS = driver_$(driver).c module_initialize_$(initialize).c \
-	module_demloader_$(DEM_loader).c module_arrayinit_$(array_initializer).c \
-	module_initflow_$(flow_initializer).c module_pulse_$(pulse).c \
-	module_distribute_$(distribute).c module_neighbor_$(neighbor_ID).c \
-	module_activate_$(activate).c module_output_$(output).c
+SRCS = driver_$(driver).c initialize_$(initialize).c \
+	demloader_$(DEM_loader).c arrayinit_$(array_initializer).c \
+	initflow_$(flow_initializer).c pulse_$(pulse).c \
+	distribute_$(distribute).c neighbor_$(neighbor_ID).c \
+	activate_$(activate).c output_$(output).c
 
 OBJ = $(SRCS:.c=.o)
 

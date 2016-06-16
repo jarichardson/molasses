@@ -22,7 +22,7 @@ export INSTALLPATH       = $(PWD)/bin
 #     -> Where is gdal.h ?
 export GDAL_INCLUDE_PATH = /usr/include/gdal
 #     -> Where is gdal.so ? (If it's in a common lib folder, you can likely leave this blank)
-export GDAL_LIB_PATH     = /usr/lib64
+export GDAL_LIB_PATH     = 
 
 
 
