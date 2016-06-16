@@ -14,57 +14,19 @@ export neighbor_ID       = 01
 export activate          = 01
 export output            = 00
 
+
 # Linking and compiling variables: Alter as needed for your system.
 export CC               ?= gcc
-export INSTALLPATH       = /usr/local
+export INSTALLPATH       = $(PWD)/bin
+#GDAL
+#     -> Where is gdal.h ?
 export GDAL_INCLUDE_PATH = /usr/include/gdal
-# If needed, set lib path. Likely this can be left blank.
-# If this is set, toggle which LIBS line in commented in src/Makefile
-export GDAL_LIB_PATH     = 
+#     -> Where is gdal.so ? (If it's in a common lib folder, you can likely leave this blank)
+export GDAL_LIB_PATH     = /usr/lib64
 
-export bindir      = $(INSTALLPATH)/bin
 
-# Package-related substitution variables
-export package     = molasses
-export version     = 1.0.0
-export tarname     = $(package)
-export distdir     = $(tarname)-$(version)
 
 all clean check install uninstall molasses:
 	$(MAKE) -C src $@
 
-dist: $(distdir).tar.gz
-	@echo "*** Made tarball at $(distdir).tar.gz ***"
-
-$(distdir).tar.gz: FORCE $(distdir)
-	tar chof - $(distdir) | gzip -9 -c >$(distdir).tar.gz
-	rm -rf $(distdir)
-
-$(distdir):
-	mkdir -p $(distdir)/src
-	cp Makefile $(distdir)
-	cp sample.cfg $(distdir)
-	cp README $(distdir)
-	cp src/Makefile $(distdir)/src
-	cp src/*.c $(distdir)/src
-	cp src/*.h $(distdir)/src
-	mkdir $(distdir)/src/pcheck
-	cp src/pcheck/* $(distdir)/src/pcheck
-	mkdir $(distdir)/raster_samples
-	cp raster_samples/flat_1300x1300.asc $(distdir)/raster_samples
-	mkdir $(distdir)/docs
-	cp docs/* $(distdir)/docs
-
-distcheck: $(distdir).tar.gz
-	gzip -cd $+ | tar xvf -
-	$(MAKE) -C $(distdir) all check
-	$(MAKE) -C $(distdir) DESTDIR=$${PWD}/$(distdir)/_inst install uninstall
-	$(MAKE) -C $(distdir) clean
-	rm -rf $(distdir)
-	@echo "*** Package $(distdir).tar.gz is ready for distribution. ***"
-
-FORCE:
-	-rm -rf $(distdir) &>/dev/null
-	-rm $(distdir).tar.gz &>/dev/null
-
-.PHONY: FORCE all clean check dist distcheck install uninstall
+.PHONY: FORCE all clean check install uninstall

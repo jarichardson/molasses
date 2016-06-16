@@ -1,7 +1,12 @@
-CFLAGS = -Wall -pedantic -g -O2 -Wno-long-long
-INCLUDES = -I$(GDAL_INCLUDE_PATH)
+CFLAGS = -Wall -O2
+INCLUDES = -I$(GDAL_INCLUDE_PATH) -I../include -I./include
+
+#If you set a specific path for your GDAL libraries, this will look for it!
+ifndef GDAL_LIB_PATH
 LIBS = -lgdal -lm
-# LIBS = -L$(GDAL_LIB_PATH) -lgdal -lm
+else
+LIBS = -L$(GDAL_LIB_PATH) -lgdal -lm
+endif
 
 SRCS = driver_$(driver).c module_initialize_$(initialize).c \
 	module_demloader_$(DEM_loader).c module_arrayinit_$(array_initializer).c \
@@ -17,6 +22,7 @@ MAIN = molasses
 
 all:	$(MAIN)
 		@echo "*** $(MAIN) has been compiled. ***"
+
 
 $(MAIN): $(OBJ)
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $+ $(LIBS)
@@ -35,11 +41,11 @@ clean:
 	$(RM) *.o *~ $(MAIN) pcheck/out pcheck/*~
 
 install:
-	install -d $(DESTDIR)$(bindir)
-	install -m 0755 $(MAIN) $(DESTDIR)$(bindir)
+	install -d $(INSTALLPATH)
+	install -m 0755 $(MAIN) $(INSTALLPATH)
 
 uninstall:
-	-rm $(DESTDIR)$(bindir)/$(MAIN) &>/dev/null
+	-rm $(INSTALLPATH)/$(MAIN) &>/dev/null
 
 #depend: $(SRCS)
 #	makedepend $(INCLUDES) $^
