@@ -10,7 +10,7 @@ export array_initializer = 00
 export flow_initializer  = Full
 export pulse             = 00
 export distribute        = 00
-export neighbor_ID       = 01
+export neighbor_ID       = 8
 export activate          = Par
 export output            = 00
 

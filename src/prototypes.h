@@ -57,7 +57,6 @@ Automata *NEIGHBOR_ID(Automata,DataCell**,double*,Automata*,int*);
 	  return: neighbor_list
 	*/
 
-Automata **ACTIVELIST_INIT(unsigned,unsigned);
 DataCell **GLOBALDATA_INIT(unsigned,unsigned);
 	/*args: rows, colums
 	*/
