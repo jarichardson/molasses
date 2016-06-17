@@ -27,13 +27,12 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	
 	/*Main Arrays*/
 	DataCell **dataGrid;         /*Global Data Grid                      */
-	Automata **CAList;                  /*Cellular Automata Lists (Active Cells)*/
+	Automata *CAList;                  /*Cellular Automata Lists (Active Cells)*/
 	VentArr  *Vents;                    /*Source Vent List                      */
-	unsigned *ActiveCounter;            /*Number of Active Cells in CA List     */
+	unsigned ActiveCounter = 0;            /*Number of Active Cells in CA List     */
 	
 	/*Model Parameters*/
 	int      i,j, ret;                  /*loop variables, function return value */
-	unsigned CAListCount = 0;           /*Number of CA Lists, def in INIT_FLOW  */
 	unsigned CAListSize  = 0;           /*Size of each CA List, def in INIT_FLOW*/
 	unsigned ventCount   = 0;           /*Number of Src Vents, def in INITIALIZE*/
 	int      pulseCount  = 0;           /*Current number of Main PULSE loops    */
@@ -179,7 +178,6 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	ret = INIT_FLOW(dataGrid,      /*DataCell  Global Data Grid                 */
 	               &CAList,        /*Automaton Active Cells List                */
 	               Vents,          /*VentArr   Vent Data Array                  */
-	               &CAListCount,   /*unsigned  Number of CA Lists created       */
 	               &CAListSize,    /*unsigned  Size of each empty CA List       */
 	               ventCount,      /*unsigned  Number of Vents                  */
 	               &ActiveCounter, /*unsigned  Number of active cells in CA List*/
@@ -211,9 +209,9 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 		/*        Delivers lava to vents based on information in Vent Data Array.
 		          Returns total volume remaining to be erupted.                   */
 		
-		ret = PULSE(CAList[1],        /*Automaton Active Cells List               */
+		ret = PULSE(CAList,        /*Automaton Active Cells List               */
 		            &Vents,           /*VentArr   Vent Data Array                 */
-		            ActiveCounter[1], /*unsigned  Number of activ cells in CA List*/
+		            ActiveCounter, /*unsigned  Number of activ cells in CA List*/
 		            &volumeRemaining, /*double    Countdown Lava Volume bookkeeper*/
 		            ventCount,        /*unsigned  Number of vents                 */
 		            DEMmetadata       /*double    Geographic Metadata             */
@@ -241,7 +239,7 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 		  Continue, call Distribute module.*/
 		
 		/*Update status message on screen*/
-		printf("\rInundated Cells: %-7d; Volume Remaining: %10.2f",ActiveCounter[1],
+		printf("\rInundated Cells: %-7d; Volume Remaining: %10.2f",ActiveCounter,
 		       volumeRemaining);
 		
 		
@@ -251,8 +249,8 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 		          Updates a Cellular Automata List and the active cell counter.*/
 		
 		ret = DISTRIBUTE(dataGrid,          /*DataCell  Global Data Grid       */
-		                 CAList[1],         /*Automaton Active Cells List      */
-		                 &ActiveCounter[1], /*unsigned  Number of active cells */
+		                 CAList,         /*Automaton Active Cells List      */
+		                 &ActiveCounter, /*unsigned  Number of active cells */
 		                 DEMmetadata        /*double    Geographic Metadata    */
 		                );
 		
@@ -284,8 +282,8 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 		            string    Original Raster Projection     */
 		/*
 		ret = OUTPUT(dataGrid,
-		             CAList[1],
-		             ActiveCounter[1],
+		             CAList,
+		             ActiveCounter,
 		             tempFilename,
 		             0,
 		             DEMmetadata,
@@ -310,7 +308,7 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	printf("\n\n                     Single Flow Complete!\n");
 	
 	/*Print out final number of inundated cells*/
-	printf("Final Count: %d cells inundated.\n\n", ActiveCounter[1]);
+	printf("Final Count: %d cells inundated.\n\n", ActiveCounter);
 	
 	
 	/*POST FLOW WRAP UP: CONSERVATION OF MASS CHECK******************************/
@@ -320,9 +318,9 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	
 	volumeErupted = 0;
 	/*For each Active Flow Cell, add cell lava volume to volumeErupted*/
-	for(i=1;i<=ActiveCounter[1];i++)
-		volumeErupted += (CAList[1][i].thickness + 
-		               dataGrid[CAList[1][i].row][CAList[1][i].col].residual) *
+	for(i=1;i<=ActiveCounter;i++)
+		volumeErupted += (CAList[i].thickness + 
+		               dataGrid[CAList[i].row][CAList[i].col].residual) *
 		               DEMmetadata[1] * DEMmetadata[5];
 	
 	/*print out volume delivered to vents and total volume now in cells*/
@@ -364,8 +362,8 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 		if(strlen(Filenames[i+3]) > 1) {
 		/*If there's a file path given, write model output to it.*/
 			ret = OUTPUT(dataGrid,         /*DataCell  Global Data Grid           */
-			             CAList[1],        /*Automaton Active Cells List          */
-			             ActiveCounter[1], /*unsigned  Number of active cells     */
+			             CAList,        /*Automaton Active Cells List          */
+			             ActiveCounter, /*unsigned  Number of active cells     */
 			             Filenames[i+3],   /*string    Output File Path           */
 			             i,                /*OUTPUT Code, see above               */
 			             DEMmetadata,""    /*string    Original Raster Projection */

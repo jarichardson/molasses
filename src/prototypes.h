@@ -33,8 +33,8 @@ unsigned ACTIVATE(DataCell**,Automata*,unsigned,unsigned,unsigned,char,char);
 		residual
 	*/
 
-int INIT_FLOW (DataCell**,Automata***,VentArr*,unsigned*,unsigned*,unsigned,
-               unsigned**,double*,double*);
+int INIT_FLOW (DataCell**,Automata**,VentArr*,unsigned*,unsigned,
+               unsigned*,double*,double*);
 	/*args:
 		data array,
 		*active list,

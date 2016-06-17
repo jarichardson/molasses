@@ -1,8 +1,8 @@
 #include "prototypes.h"
 
-int INIT_FLOW (DataCell **dataGrid, Automata ***CAList, VentArr *ventList,
-               unsigned *CAListCount, unsigned *CAListSize, unsigned ventCount,
-               unsigned **activects, double *gridInfo, double *totalVolume) {
+int INIT_FLOW (DataCell **dataGrid, Automata **CAList, VentArr *ventList,
+               unsigned *CAListSize, unsigned ventCount,
+               unsigned *activeCt, double *gridInfo, double *totalVolume) {
 /* Module INIT_FLOW
 	creates Cellular Automata Lists (active cell list)
 	checks that all vents are within DEM area
@@ -22,22 +22,20 @@ int INIT_FLOW (DataCell **dataGrid, Automata ***CAList, VentArr *ventList,
 */
 	
 	unsigned ventRow, ventCol;
-	Automata **IFCAList; /*working array for CAList in Init_Flow module*/
-	unsigned *IFactivects; /*working array for active counts*/
 	int i,j,k;
 	double minResidual = 0;
 	double randElev;
-	double maxCellsPossible;
+	double maxCellsPossible = 0;
 	
 	*totalVolume = 0;
 	
 	/*DATA GRID PREPARATION*/
 	/* 1. Find minimum residual in entire grid (to safely calculate maximum number
 	      of cells)
-	   2. Calculate DEM elevations based on elevation and uncertainty*/
+	   2. Calculate new grid elevations based on DEM elevation and uncertainty*/
 	k=0;
-	for(i=0;i<gridInfo[4];i++) {
-		for(j=0;j<gridInfo[2];j++) {
+	for(i=0; i < gridInfo[4]; i++) {
+		for(j=0; j < gridInfo[2]; j++) {
 			/*if first cell, assign modal thickness as min and iterate k*/
 			if ((k++)==0)	minResidual = dataGrid[i][j].residual;
 			/*if cell modal thickness is less than min, rewrite min.*/
@@ -71,44 +69,34 @@ int INIT_FLOW (DataCell **dataGrid, Automata ***CAList, VentArr *ventList,
 	}
 	
 	/*CELLULAR AUTOMATA LIST PREPARATION*****************************************/
-	/*While no parellelization is in effect, scale CA List Size to the model*/
-	/*The MOST cells a flow can inundate is 3*(total volume/residual volume)+2*/
-	maxCellsPossible = 0.0;
+	//The maximum number of possible cells is decided by 3 considerations
+	//1: The theoretical maximum-possible-cell flow geometry would be a long 1-cell wide line of lava, at residual thickness, with all neighboring cells inundated with >~0 m of lava.
 	for(i=0;i<ventCount;i++) maxCellsPossible += ventList[i].totalvolume;
 	maxCellsPossible *= (3/(gridInfo[1] * gridInfo[5] * minResidual));
-	maxCellsPossible += 2;
+	maxCellsPossible += 6; //neighbors at the end of the theoretical lava line
+	
+	//2: Even if the total erupted volume is very minimal, the maximum flow size should be at least the number of vents in the simulation plus their grid neighbors.
+	if(ventCount*9 > maxCellsPossible) maxCellsPossible = ventCount*9;
+	
+	//3: The practical maximum is the size of the map grid. There's no use to have a lava flow active list that cannot be filled with real grid spaces
+	if(maxCellsPossible > gridInfo[4] * gridInfo[2]){
+		//Here would be a good place to check if the flow is *WAY* bigger than the grid, and print a warning.
+		maxCellsPossible = gridInfo[4] * gridInfo[2];
+	}
+	
 	*CAListSize = (unsigned) maxCellsPossible;
 	
-	/*Do a preliminary check to make sure there are fewer vents than the worker size.
-	  If there are more vents than the first worker, it's doubtful this simulation
-	  can work, so we'll nip that possibility in the bud right here.*/
-	if(ventCount >= *CAListSize) {
-		printf("\nERROR [INIT_FLOW]:");
-		printf(" Too many vents (%u)! Max # of vents is %u\n",ventCount,*CAListSize);
-		return(-1);
-	}
-	
 	/*ARRAY DECLARATION*/
-	/*Declare 2 Cellular Automata lists of size CAListSize 
-	  (a main list and a spare)*/
-	*CAListCount = 2;
 	printf("Allocating Memory for Active Cell Lists... ");
-	*CAList = ACTIVELIST_INIT(*CAListCount,*CAListSize);
-	IFCAList = *CAList;
-	
-	/*Declare an array of Active Counters for each CA List, initialize at 0*/
-	printf("and counters...");
-	if((*activects=
-       (unsigned*)malloc((unsigned)(*CAListCount + 1)*sizeof(unsigned)))==NULL){
+	if(( *CAList=(Automata*)malloc( (unsigned)(*CAListSize) * sizeof(Automata) ) ) == NULL){
 		printf("\nERROR [INIT_FLOW]:");
-		printf(" No more memory! Tried to create Active Count List\n");
-		return(-1);
+		printf("   NO MORE MEMORY: Tried to allocate memory for %u flow cells!! Exiting\n",
+		       (*CAListSize));
+		exit(1);
 	}
-	printf(" Done.\n");
-	IFactivects = *activects;
 	
-	/*Declare Active List Counts to 0 (No Active Cells yet)*/
-	for(i=1;i<=*CAListCount;i++) IFactivects[i]=0;
+	//Reset number of active cells in the flow to 0
+	*activeCt=0;
 	
 	/*LOAD VENTS INTO CA LIST****************************************************/
 	for(i=0;i<ventCount;i++) {
@@ -156,18 +144,18 @@ int INIT_FLOW (DataCell **dataGrid, Automata ***CAList, VentArr *ventList,
 		/*MODULE: ACTIVATE*********************************************************/
 		/*        Appends a cell to the CA List using data from a Global Data Grid*/
 		
-		IFactivects[1] = ACTIVATE(dataGrid,       /*DataCell Global Data Grid     */
-		                          IFCAList[1],    /*Automata CA List              */
-		                          ventRow,        /*unsigned Cell Row Location    */
-		                          ventCol,        /*unsigned Cell Column Location */
-		                          IFactivects[1], /*unsigned No. Cells in CA List */
-		                          0,              /*char     Parent Code: 0=none  */
-		                          1               /*char     Vent Code: 1=vent    */
-		                         );
+		*activeCt = ACTIVATE(dataGrid,       /*DataCell Global Data Grid     */
+		                     *CAList,    /*Automata CA List              */
+		                     ventRow,        /*unsigned Cell Row Location    */
+		                     ventCol,        /*unsigned Cell Column Location */
+		                     *activeCt, /*unsigned No. Cells in CA List */
+		                     0,              /*char     Parent Code: 0=none  */
+		                     1               /*char     Vent Code: 1=vent    */
+		                    );
 		
 		/*Check for Error Flags*/
 		/*Check that activect of first worker has been updated (ct should be i+1)*/
-		if(IFactivects[1]<=i){
+		if(*activeCt<=i){
 			printf("\nError [INIT_FLOW]: Error flag returned from [ACTIVATE]\n");
 			return(-1);
 		}
