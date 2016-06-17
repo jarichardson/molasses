@@ -1,6 +1,6 @@
 #include "prototypes.h"
 
-int PULSE(Automata *actList, VentArr **ventList, unsigned actCt,
+int PULSE(Automata *actList, VentArr **Vents, unsigned actCt,
           double *volumeRemaining, unsigned ventCount, double *gridinfo){
 /*Module: PULSE
 	If volume remains to be erupted, delivers a pre-defined pulse of magma to each
@@ -30,32 +30,30 @@ int PULSE(Automata *actList, VentArr **ventList, unsigned actCt,
 	
 	unsigned i, currentVent;
 	double   pulseThickness; /*Pulse Volume divided by data grid resolution*/
-	VentArr  *PULSEVents;     /*working array for vents in this module*/
-	PULSEVents = *ventList;
 	
 	/*If there is still volume to pulse to at least one vent...*/
-	if (*volumeRemaining > 0) {
+	if (*volumeRemaining > (double) 0.0) {
 		currentVent = 0;
 		
 		/*Search for Vents among the active cells*/
 		for(i=0;i<=actCt;i++) {
 			/*if this cell is a vent cell (vent!=0), add pulse*/
-			if (actList[i].vent) {
+			if ((actList+i)->vent) {
 				/*Decrease Pulse volume to Total Remaining lava volume at vent if 
 				    Remaining lava is less than the Pulse Volume*/
-				if (PULSEVents[currentVent].pulsevolume >
-				    PULSEVents[currentVent].totalvolume)
-					PULSEVents[currentVent].pulsevolume = PULSEVents[currentVent].totalvolume;
+				if ((*Vents+currentVent)->pulsevolume >
+				    (*Vents+currentVent)->totalvolume)
+					(*Vents+currentVent)->pulsevolume = (*Vents+currentVent)->totalvolume;
 				
 				/*Calculate thickness of lava to deliver based on pulse volume and
 				    grid resolution*/
-				pulseThickness = PULSEVents[currentVent].pulsevolume / 
+				pulseThickness = (*Vents+currentVent)->pulsevolume / 
 				                  (gridinfo[1] * gridinfo[5]);
-				actList[i].thickness += pulseThickness;
-				actList[i].elev      += pulseThickness;
+				(actList+i)->thickness += pulseThickness;
+				(actList+i)->elev      += pulseThickness;
 				
 				/*Subtract vent's pulse from vent's total magma budget*/
-				PULSEVents[currentVent].totalvolume -= PULSEVents[currentVent].pulsevolume;
+				(*Vents+currentVent)->totalvolume -= (*Vents+currentVent)->pulsevolume;
 				
 				/*Move vent counter to next vent*/
 				currentVent++;
@@ -64,25 +62,25 @@ int PULSE(Automata *actList, VentArr **ventList, unsigned actCt,
 				if(currentVent >= ventCount) {
 					/*Tally up remaining volume, from scratch*/
 					*volumeRemaining = 0;
-					for(currentVent=0;currentVent<ventCount;currentVent++)
-						*volumeRemaining += PULSEVents[currentVent].totalvolume;
+					for(currentVent=0; currentVent < ventCount; currentVent++)
+						*volumeRemaining += (*Vents+currentVent)->totalvolume;
 					
-					/*Return 1, successful PULSE*/
-					return(1);
+					/*Return 0, successful PULSE*/
+					return 0;
 				}
 			}
 		}
 	}
 	/*If PULSE was called with no more volume to erupt, exit without doing anything.*/
-	else if (*volumeRemaining == 0) return(0); 
+	else if (*volumeRemaining == (double) 0.0) return 1; 
 	
 	else { /*(*vol Remaining < 0) Volume remaining should NEVER come in below 0*/
 		printf("\nError [PULSE]: Remaining volume input is negative.\n");
-		return(-1);
+		return 2;
 	}
 	
-	/*Return -1: if this line is reached, all cells were checked to be vents but
+	/*Return 1: if this line is reached, all cells were checked to be vents but
 	  all the vents found did not reach the ventCount. This is an Error!*/
 	printf("\nError [PULSE]: All magma not delivered to vents/vents missing!\n");
-	return(-1);
+	return 3;
 }

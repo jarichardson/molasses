@@ -218,12 +218,12 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 		           );
 		
 		/*Check for Error flags (PULSE returns <0 or 0 value)*/
-		if(ret<0) {
+		if(ret > 1) {
 			printf("\nERROR [MAIN]: Error flag returned from [PULSE].\n");
 			printf("Exiting.\n");
-			return(-1);
+			return -1;
 		}
-		else if (ret==0) {
+		else if (ret) {
 			if (volumeRemaining) {
 				/*This return should not be possible, 
 				  Pulse should return 0 if no volume remains*/
@@ -231,7 +231,7 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 				printf("Exiting.\n");
 				return(-1);
 			}
-			/*If ret==0, PULSE was called even though there was no lava to distribute.
+			/*If ret=1, PULSE was called even though there was no lava to distribute.
 			  Do not call Pulse or Distribute anymore! Break out of While loop.     */
 			break;
 		}
