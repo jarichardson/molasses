@@ -33,12 +33,43 @@ typedef struct DataCell {
 	double dem_elev;
 } DataCell;
 
+/*Input parameters*/
+typedef struct Inputs {
+	char *config_file;
+	char *dem_file;
+	char *slope_map;
+	double residual;
+	char *uncert_map;
+	unsigned elev_uncert;
+	char *spd_file;
+	int num_grids;
+	unsigned spd_grid_spacing;
+	double min_residual;
+	double max_residual;
+	double log_mean_residual;
+	double log_std_residual;
+	double min_pulse_volume;
+	double max_pulse_volume;
+	double min_total_volume;
+	double max_total_volume;
+	double log_mean_volume;
+	double log_std_volume;
+	unsigned runs;
+	unsigned flows;
+} Inputs;
+
 /*Vent Information*/
 typedef struct VentArr {
 	double northing;
 	double easting;
 	double totalvolume;
 	double pulsevolume;
+	double min_totalvolume;
+	double max_totalvolume;
+	double log_mean_totalvolume;
+	double log_std_totalvolume;
+	double min_pulse_volume;
+	double max_pulse_volume;
 } VentArr;
 
 /*Global Variables*/
