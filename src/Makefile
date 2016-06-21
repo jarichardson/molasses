@@ -3,9 +3,9 @@ INCLUDES = -I$(GDAL_INCLUDE_PATH) -I../include -I./include
 
 #If you set a specific path for your GDAL libraries, this will look for it!
 ifndef GDAL_LIB_PATH
-LIBS = -lgdal -lm
+LIBS = -lgdal -L../lib -lgc -lran -lm
 else
-LIBS = -L$(GDAL_LIB_PATH) -lgdal -lm
+LIBS = -L$(GDAL_LIB_PATH) -lgdal -L../lib -lgc -lran -lm
 endif
 
 SRCS = driver_$(driver).c initialize_$(initialize).c \

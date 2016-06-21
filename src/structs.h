@@ -58,11 +58,20 @@ typedef struct Inputs {
 	unsigned flows;
 } Inputs;
 
+
+/*Program Outputs*/
+typedef struct Outputs {
+	char *flow_file;
+	char *hits_file;
+} Outputs;
+
+
 /*Vent Information*/
 typedef struct VentArr {
 	double northing;
 	double easting;
 	double totalvolume;
+	double remainingvolume;
 	double pulsevolume;
 	double min_totalvolume;
 	double max_totalvolume;

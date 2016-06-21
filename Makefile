@@ -3,8 +3,8 @@
 
 #MODULES: Alter as needed. 
 #Check docs/ for module codes and destriptions.
-export driver            = 00
-export initialize        = 00
+export driver            = Full
+export initialize        = Full
 export DEM_loader        = 00
 export array_initializer = 00
 export flow_initializer  = Full

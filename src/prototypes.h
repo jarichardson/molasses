@@ -1,6 +1,10 @@
 #include "structs.h"  /* Global Structures and Variables*/
 #include "gdal.h"     /* GDAL */
 #include "cpl_conv.h" /* GDAL for CPLMalloc() */
+#include <gc.h>
+#include <ranlib.h>
+#include <rnglib.h>
+
 
 int PULSE(Automata*,VentArr**,unsigned,double*,unsigned,double*);
 	/*args: Active CA List,
@@ -64,15 +68,13 @@ DataCell **GLOBALDATA_INIT(unsigned,unsigned);
 int DISTRIBUTE(DataCell**,Automata*,unsigned*,double*);
 	/*args: Global Grid, Active List, Active Count, DEM metadata*/
 
-int INITIALIZE(char*,char***,double*,double*,VentArr**,unsigned*);
+int INITIALIZE(Inputs *, Outputs *, VentArr **);
 	/*args:
-		Configuration File Name,
-		DEM File Name,
-		Flow Output File Name,
-		Modal Thickness,
-		Vent Array,
-		Vent Count
+		Input file list,
+		Output file list,
+		Vent Array
 	*/
+
 
 double *DEM_LOADER(char*, DataCell***,char*);
 	/*args: DEM file name, Null Global Data Grid pointer, Model Code*/

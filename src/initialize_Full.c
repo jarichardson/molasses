@@ -1,10 +1,10 @@
-#include <prototypes_LJC.h>
+#include "prototypes.h"
 #define CR 13            /* Decimal code of Carriage Return char */
 #define LF 10            /* Decimal code of Line Feed char */
 
 int INITIALIZE(Inputs *In, /* Structure of input parmaeters */
                Outputs *Out, /* Structure of model outputs */
-               VentArr *Vents /* Array of active vent structures */
+               VentArr **Vents /* Array of active vent structures */
                ) {
 /*Module INITIALIZE
 	Accepts a configuration file and returns model variables. 
@@ -56,20 +56,24 @@ int INITIALIZE(Inputs *In, /* Structure of input parmaeters */
 	char     var[64];               /*Parameter Name  in each line*/
 	char     value[256];            /*Parameter Value in each line*/
 	char     *ptr;
-	FILE	*ConfigFile;
+	
+	FILE     *ConfigFile;
 	FILE     *Opener;     /*Dummy File variable to test valid output file paths */
 	/* enum ASCII_types ascii_file; */
 	double dval;
 	int ret = 0;
+	int i = 0;
 	
 	/* Initialize vent parameters */
-	Vents->northing = 0;
-	Vents->easting = 0;
-	Vents->currentvolume = 0;
-	Vents->volumeToErupt = 0;
-	Vents->pulsevolume = 0;
-	Vents->residual = 0;
-	Vents->spd_grd = NULL;
+	(*Vents+i)->northing = 0;
+	(*Vents+i)->easting = 0;
+	/*
+	(*Vents+i)->currentvolume = 0;
+	(*Vents+i)->volumeToErupt = 0;*/
+	(*Vents+i)->pulsevolume = 0;
+	/*
+	(*Vents+i)->residual = 0;
+	(*Vents+i)->spd_grd = NULL;*/
 	
 	/*
 	typedef struct VentArr {
@@ -184,6 +188,7 @@ int INITIALIZE(Inputs *In, /* Structure of input parmaeters */
 			}
 			else if (dval > 0) 	In->elev_uncert = dval;
 		}		
+		/*
 		else if (!strncmp(var, "SPATIAL_DENSITY_FILE", strlen("SPATIAL_DENSITY_FILE"))) {
 			In->spd_file = (char *)GC_MALLOC(((strlen(value)+1) * sizeof(char)));	
   			if (In->spd_file == NULL) {
@@ -200,7 +205,7 @@ int INITIALIZE(Inputs *In, /* Structure of input parmaeters */
 				        In->spd_file, strerror(errno));
 				return 1;
 			}
-			ret = load_spd_data(Opener, Vents, &In->num_grids);
+			ret = load_spd_data(Opener, (*Vents+i), &In->num_grids);
 			(void)fclose(Opener);
 			if (ret) {
 				fprintf (stderr, 
@@ -208,7 +213,7 @@ int INITIALIZE(Inputs *In, /* Structure of input parmaeters */
 				return 1;
 			}
 			
-		}		
+		}		*/
 		else if (!strncmp(var, "SPD_GRID_SPACING", strlen("SPD_GRID_SPACING"))) {
 			dval = strtod(value, &ptr);
 			if (dval > 0) In->spd_grid_spacing = dval;
@@ -332,7 +337,7 @@ int INITIALIZE(Inputs *In, /* Structure of input parmaeters */
 		}		
 		else if (!strncmp(var, "VENT_EASTING", strlen("VENT_EASTING"))) {
 			dval = strtod(value, &ptr);
-			if (dval > 0) Vents->easting = dval;
+			if (dval > 0) (*Vents+i)->easting = dval;
 			else {
 				fprintf(stderr, 
 				        "\n[INITIALIZE]: Unable to read value for VENT_EASTING\n");
@@ -341,7 +346,7 @@ int INITIALIZE(Inputs *In, /* Structure of input parmaeters */
 		}		
 		else if (!strncmp(var, "VENT_NORTHING", strlen("VENT_NORTHING"))) {
 			dval = strtod(value, &ptr);
-			if (dval > 0) Vents->northing = dval;
+			if (dval > 0) (*Vents+i)->northing = dval;
 			else {
 				fprintf(stderr, 
 					    "\n[INITIALIZE]: Unable to read value for VENT_NORTHING\n");
@@ -397,12 +402,12 @@ int INITIALIZE(Inputs *In, /* Structure of input parmaeters */
 	}
 	if(In->spd_file == NULL || strlen (In->spd_file) < 2) {  /*Spatial density Filename is missing.*/
 		fprintf(stderr, "\nERROR [INITIALIZE]: No spatial density Filename Given!!\n");
-		if (!Vents->easting || !Vents->northing) 
+		if (!(*Vents+i)->easting || !(*Vents+i)->northing) 
 			return 1;
 	}
 	if(In->spd_grid_spacing <= 0) { /*Spatial density grid spacing <= 0.*/
 		fprintf(stderr, "\nERROR [INITIALIZE]: Spatial density grid spacing <= 0!!\n");
-		if (!Vents->easting || !Vents->northing) 
+		if (!(*Vents+i)->easting || !(*Vents+i)->northing) 
 			return 1;
 	}
 	fprintf(stderr, "Nothing missing.\n");

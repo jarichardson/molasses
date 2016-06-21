@@ -58,6 +58,7 @@ The INITIALIZE module will use parameters for a probabilistic flow field model, 
 
 To run this kind of flow model, use the following:
  * DEM\_FILE
+ * VENT\_SPATIAL\_DENSITY\_FILE
  * MIN\_RESIDUAL and MAX\_RESIDUAL
  * MIN\_PULSE\_VOLUME and MAX\_PULSE\_VOLUME
  * MIN\_TOTAL\_VOLUME and MAX\_TOTAL\_VOLUME
