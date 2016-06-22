@@ -37,7 +37,7 @@ typedef struct DataCell {
 typedef struct Inputs {
 	char *config_file;
 	char *dem_file;
-	char *slope_map;
+	char *residual_map;
 	double residual;
 	char *uncert_map;
 	unsigned elev_uncert;
@@ -54,6 +54,7 @@ typedef struct Inputs {
 	double max_total_volume;
 	double log_mean_volume;
 	double log_std_volume;
+	unsigned vent_count;
 	unsigned runs;
 	unsigned flows;
 } Inputs;
@@ -61,8 +62,8 @@ typedef struct Inputs {
 
 /*Program Outputs*/
 typedef struct Outputs {
-	char *flow_file;
-	char *hits_file;
+	char *ascii_flow_file;
+	char *ascii_hits_file;
 } Outputs;
 
 
@@ -71,12 +72,12 @@ typedef struct VentArr {
 	double northing;
 	double easting;
 	double totalvolume;
-	double remainingvolume;
-	double pulsevolume;
 	double min_totalvolume;
 	double max_totalvolume;
+	double remainingvolume;
 	double log_mean_totalvolume;
 	double log_std_totalvolume;
+	double pulsevolume;
 	double min_pulse_volume;
 	double max_pulse_volume;
 } VentArr;

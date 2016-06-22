@@ -61,6 +61,8 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 		return(-1);
 	}
 	
+	In.config_file = argv[1];
+	
 	printf("Beginning flow simulation...\n");
 	
 	/*MODULE: INITIALIZE*********************************************************/
@@ -77,8 +79,8 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	            [7] - Output file: Raster Elevation + Flow Thickness            */
 	
 	ret = INITIALIZE(&In,        /* Input parameters structure  */
-	                  &Out,       /* Output parameters structure */
-	                  &Vents);     /* VentArr Structure           */
+	                 &Out,       /* Output parameters structure */
+	                 &Vents);    /* VentArr Structure           */
 	                	
 	/*Check for Error flag (INITIALIZE returns 1 if error, 0 if no errors)*/
 	if(ret){
@@ -103,7 +105,7 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 		          [5] n-s pixel resolution (negative value)                       */
 	
 	/*Assign Topography to Data Grid Locations*/
-	DEMmetadata = DEM_LOADER(Filenames[0], /*char            DEM file name   */
+	DEMmetadata = DEM_LOADER(In.dem_file, /*char            DEM file name   */
 	                         &dataGrid,    /*DataCell        Global Data Grid*/
 	                         "TOPOG"       /*DEM_LOADER Code Topography      */
 	                        );
