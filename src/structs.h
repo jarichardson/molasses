@@ -78,8 +78,8 @@ typedef struct VentArr {
 	double log_mean_totalvolume;
 	double log_std_totalvolume;
 	double pulsevolume;
-	double min_pulse_volume;
-	double max_pulse_volume;
+	double min_pulsevolume;
+	double max_pulsevolume;
 } VentArr;
 
 /*Global Variables*/
