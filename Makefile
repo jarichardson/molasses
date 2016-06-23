@@ -6,7 +6,6 @@
 export driver            = Full
 export initialize        = Full
 export DEM_loader        = 00
-export array_initializer = 00
 export flow_initializer  = Full
 export pulse             = Full
 export distribute        = 00

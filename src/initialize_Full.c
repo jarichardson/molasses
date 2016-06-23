@@ -609,7 +609,6 @@ int INITIALIZE(Inputs *In, /* Structure of input parmaeters */
 			return 1;
 		}
 		else { // Vents have been declared. Cycle through vents to check for parameters
-		fprintf(stderr, "\nThere is %d vent(s), det\n", In->vent_count);
 			for(i=0; i < In->vent_count; i++) {
 				if ((*Vents+i)->northing == DBL_MAX) { //Vent Northing
 					fprintf(stderr, 

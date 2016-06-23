@@ -21,12 +21,11 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	
 	/*VARIABLES******************************************************************/
 	/*Files*/
-	char     *configFilename = argv[1]; /*configuration file path               */
 	char     **Filenames;               /*A list of file paths for model output */
 	char     tempFilename[15];          /*A temporary file path for whatever use*/
 	
 	/*Main Arrays*/
-	DataCell **dataGrid;         /*Global Data Grid                      */
+	DataCell **dataGrid = NULL;         /*Global Data Grid                      */
 	Automata *CAList;                  /*Cellular Automata Lists (Active Cells)*/
 	VentArr  *Vents;                    /*Source Vent List                      */
 	unsigned ActiveCounter = 0;            /*Number of Active Cells in CA List     */
@@ -116,11 +115,10 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 		return(-1);
 	}
 	
-	
 	/*Assign Residual Thickness to Data Grid Locations*/
 	/*If residualThickness is -1, user input a Residual Thickness Map*/
-	if(residualThickness==-1) {
-		DEMmetadata = DEM_LOADER(Filenames[1], /*char            Residual filename*/
+	if(In.residual==-1) {
+		DEMmetadata = DEM_LOADER(In.residual_map, /*char            Residual filename*/
 			                       &dataGrid,    /*DataCell        Global Data Grid */
 			                       "RESID"       /*DEM_LOADER Code Resid Thickness  */
 			                      );
@@ -144,8 +142,8 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	
 	/*Assign Elevation Uncertainty to Data Grid Locations*/
 	/*If elevationUncertainty is -1, user input an elevation uncertainty map*/
-	if(elevationUncertainty==-1) {
-		DEMmetadata = DEM_LOADER(Filenames[2], /*char            uncertny filename*/
+	if(In.elev_uncert==-1) {
+		DEMmetadata = DEM_LOADER(In.uncert_map, /*char            uncertny filename*/
 			                       &dataGrid,    /*DataCell        Global Data Grid */
 			                       "T_UNC"       /*DEM_LOADER Code elev uncertainty */
 			                      );

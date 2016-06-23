@@ -19,7 +19,8 @@ double *DEM_LOADER(char *DEMfilename, DataCell ***grid, char *modeltype) {
 	GDALRasterBandH DEMBand;
 	double          *DEMGeoTransform;
 	float           *pafScanline;
-	DataCell        **DEMgrid;
+	//DataCell        **DEMgrid;
+	//DataCell	fu[5][5];
 
 	unsigned        YOff;
 	unsigned        i,j;
@@ -97,11 +98,26 @@ double *DEM_LOADER(char *DEMfilename, DataCell ***grid, char *modeltype) {
 	
 	/*allocate memory for data grid*/
 	if(!strcmp(modeltype,"TOPOG")) {
-	*grid = GLOBALDATA_INIT((unsigned) DEMGeoTransform[4], 
-	                        (unsigned) DEMGeoTransform[2]);
+		*grid = (DataCell**) GC_MALLOC((size_t)(DEMGeoTransform[4])*sizeof(DataCell*));
+		if (*grid==NULL){
+			printf("[GLOBALDATA_INIT]\n");
+			printf("   NO MORE MEMORY: Tried to allocate memory for %u Rows!! Exiting\n",
+				     (int)DEMGeoTransform[4]);
+			exit(0);
+		}
+		for(i=0;i < DEMGeoTransform[2]; i++){
+			*(*grid+i) = (DataCell*) GC_MALLOC_ATOMIC((size_t)(DEMGeoTransform[2]) * sizeof(DataCell) );
+			if (*(*grid+i)==NULL) {
+				
+			printf("[GLOBALDATA_INIT]\n");
+			printf("   NO MORE MEMORY: Tried to allocate memory for %u Cols!! Exiting\n",
+				     (int) DEMGeoTransform[2]);
+			exit(0);
+			}
+		}
 	}
 	
-	DEMgrid = *grid; /*Assign pointer position to DEMgrid variable*/
+	//DEMgrid = *grid; Assign pointer position to DEMgrid variable
 	
 	/*Load elevation information into DEMBand. DEM should be only band in raster*/
 	DEMBand = GDALGetRasterBand(DEMDataset, 1);
@@ -110,11 +126,6 @@ double *DEM_LOADER(char *DEMfilename, DataCell ***grid, char *modeltype) {
 	
 	if(!strcmp(modeltype,"TOPOG")) {
 		printf("              Loading DEM into Global Data Grid...\n");
-		
-		/*allocate memory for data grid*/
-		*grid = GLOBALDATA_INIT((unsigned) DEMGeoTransform[4], 
-			                      (unsigned) DEMGeoTransform[2]);
-		DEMgrid = *grid; /*Assign pointer position to DEMgrid variable*/
 		
 		for(i=0;i<DEMGeoTransform[4];i++) { /*For each row*/
 			/*calculate row so bottom row is read into data array first*/
@@ -130,21 +141,22 @@ double *DEM_LOADER(char *DEMfilename, DataCell ***grid, char *modeltype) {
 			}
 	
 			/*Status Bar*/
-			if((i%50)==0) {
-				k=0;
-				printf("\r");
-				while(k<(DEMGeoTransform[4]-1)){
-		
-					if (k<i) printf("=");
-					else if((k-((DEMGeoTransform[4]-1)/60))<i) printf(">");
-					else printf(" ");
-					k+=DEMGeoTransform[4]/60;
-				} printf("| %3d%%",(int) (100*i/(DEMGeoTransform[4]-1)));
-			}
+/*			if((i%50)==0) {*/
+/*				k=0;*/
+/*				printf("\r");*/
+/*				while(k<(DEMGeoTransform[4]-1)){*/
+/*		*/
+/*					if (k<i) printf("=");*/
+/*					else if((k-((DEMGeoTransform[4]-1)/60))<i) printf(">");*/
+/*					else printf(" ");*/
+/*					k+=DEMGeoTransform[4]/60;*/
+/*				} printf("| %3d%%",(int) (100*i/(DEMGeoTransform[4]-1)));*/
+/*			}*/
 	
+				if ((i==1)||(i==0)) printf("\n\n");
 			/*Write elevation data column by column into 2D array using DEMgrid variable*/
 			for(j=0;j<DEMGeoTransform[2];j++) {
-				DEMgrid[i][j].dem_elev = pafScanline[j];
+				(*(*grid+i)+j)->dem_elev = pafScanline[j];
 			}
 		}
 	}
@@ -152,7 +164,7 @@ double *DEM_LOADER(char *DEMfilename, DataCell ***grid, char *modeltype) {
 	if(strcmp(modeltype,"RESID")==0) {
 		printf("              Loading RESIDUAL THICKNESS MODEL into Global Data Grid...\n");
 		
-		DEMgrid = *grid; /*Assign pointer position to DEMgrid variable*/
+		//DEMgrid = *grid; /*Assign pointer position to DEMgrid variable*/
 		
 		for(i=0;i<(DEMGeoTransform[4]);i++) { /*For each row*/
 			/*calculate row so bottom row is read into data array first*/
@@ -182,7 +194,7 @@ double *DEM_LOADER(char *DEMfilename, DataCell ***grid, char *modeltype) {
 	
 			/*Write elevation data column by column into 2D array using DEMgrid variable*/
 			for(j=0;j<DEMGeoTransform[2];j++) {
-				DEMgrid[i][j].residual = pafScanline[j];
+				(*(*grid+i)+j)->residual = pafScanline[j];
 			}
 		}
 	}
@@ -190,7 +202,7 @@ double *DEM_LOADER(char *DEMfilename, DataCell ***grid, char *modeltype) {
 	if(strcmp(modeltype,"T_UNC")==0) {
 		printf("              Loading ELEVATION UNCERTAINTY into Global Data Grid...\n");
 		
-		DEMgrid = *grid; /*Assign pointer position to DEMgrid variable*/
+		//DEMgrid = *grid; /*Assign pointer position to DEMgrid variable*/
 		
 		for(i=0;i<DEMGeoTransform[4];i++) { /*For each row*/
 			/*calculate row so bottom row is read into data array first*/
@@ -220,14 +232,18 @@ double *DEM_LOADER(char *DEMfilename, DataCell ***grid, char *modeltype) {
 	
 			/*Write elevation data column by column into 2D array using DEMgrid variable*/
 			for(j=0;j<DEMGeoTransform[2];j++) {
-				DEMgrid[i][j].elev_uncert = pafScanline[j];
+				(*(*grid+i)+j)->elev_uncert = pafScanline[j];
 			}
 		}
 	}
 	
-	printf("\n                          DEM Loaded.\n\n");
 	
 	CPLFree(pafScanline);
+	
+	
+	printf("\r==========================================================:)| 100%%");
+	printf("\n                          DEM Loaded.\n\n");
+	
 	return(DEMGeoTransform);
 
 }
