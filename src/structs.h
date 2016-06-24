@@ -26,7 +26,7 @@ typedef struct Automata {
 typedef struct DataCell {
 	double elev;
 	unsigned active;
-	char AOICode;
+	unsigned hit_count;
 	double elev_uncert;
 	double residual;
 	double random_code;
@@ -59,6 +59,15 @@ typedef struct Inputs {
 	unsigned flows;
 } Inputs;
 
+typedef struct FlowStats {
+	unsigned ca_list_size;
+	unsigned active_count;
+	unsigned vent_count;
+	unsigned run;
+	double   residual;
+	double   remaining_volume;
+	double   total_volume;
+} FlowStats;
 
 /*Program Outputs*/
 typedef struct Outputs {

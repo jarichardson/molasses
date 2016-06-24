@@ -26,22 +26,20 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	
 	/*Main Arrays*/
 	DataCell **dataGrid = NULL;         /*Global Data Grid                      */
-	Automata *CAList;                  /*Cellular Automata Lists (Active Cells)*/
+	Automata *CAList = NULL;                  /*Cellular Automata Lists (Active Cells)*/
 	VentArr  *Vents;                    /*Source Vent List                      */
 	unsigned ActiveCounter = 0;            /*Number of Active Cells in CA List     */
+	FlowStats FlowParam;                   //Flow parameter information
 	
 	/*Model Parameters*/
 	Inputs In;           /* Structure to hold model inputs named in Config file  */
 	Outputs Out;         /* Structure to hold model outputs named in config file */
 	int      i,j, ret;                  /*loop variables, function return value */
-	unsigned CAListSize  = 0;           /*Size of each CA List, def in INIT_FLOW*/
 	unsigned ventCount   = 0;           /*Number of Src Vents, def in INITIALIZE*/
 	int      pulseCount  = 0;           /*Current number of Main PULSE loops    */
 	
 	/*Physical Parameters*/
-	double   residualThickness;         /*Residual Flow Thickness               */
 	double   *DEMmetadata;              /*Geographic Coordinates of DEM Raster  */
-	double   elevationUncertainty;      /*DEM Raster Elevation Uncertainty      */
 	double   volumeToErupt;             /*Total Volume to deliver to vent cells */
 	double   volumeErupted = 0;         /*Total Volume in All Active Cells      */
 	double   volumeRemaining;           /*Volume Remaining to be Erupted        */
@@ -115,30 +113,6 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 		return(-1);
 	}
 	
-	/*Assign Residual Thickness to Data Grid Locations*/
-	/*If residualThickness is -1, user input a Residual Thickness Map*/
-	if(In.residual==-1) {
-		DEMmetadata = DEM_LOADER(In.residual_map, /*char            Residual filename*/
-			                       &dataGrid,    /*DataCell        Global Data Grid */
-			                       "RESID"       /*DEM_LOADER Code Resid Thickness  */
-			                      );
-		/*Check for Error flag (DEM_LOADER returns a null metadata list)*/
-		if(DEMmetadata==NULL){
-			printf("\nError [MAIN]: Error flag returned from DEM_LOADER[RESID].\n");
-			printf("Exiting.\n");
-			return(-1);
-		}
-	}
-	/*If residualThickness is not -1, it is constant globally.*/
-	else {
-		/*Write residual flow thickness into 2D Global Data Array*/
-		for(i=0;i<DEMmetadata[4];i++) {
-			for(j=0;j<DEMmetadata[2];j++) {
-				dataGrid[i][j].residual = residualThickness;
-			}
-		}
-	}
-	
 	
 	/*Assign Elevation Uncertainty to Data Grid Locations*/
 	/*If elevationUncertainty is -1, user input an elevation uncertainty map*/
@@ -159,11 +133,19 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 		/*Write elevation uncertainty values into 2D Global Data Array*/
 		for(i=0;i<DEMmetadata[4];i++) {
 			for(j=0;j<DEMmetadata[2];j++) {
-				dataGrid[i][j].elev_uncert = elevationUncertainty;
+				dataGrid[i][j].elev_uncert = In.elev_uncert;
 			}
 		}
 	}
 	
+	//Initialize Flow Parameter Set
+	FlowParam.ca_list_size     = 0;
+	FlowParam.active_count     = 0;
+	FlowParam.vent_count       = 0;
+	FlowParam.run              = 0; //this is actually important
+	FlowParam.residual         = 0;
+	FlowParam.remaining_volume = 0;
+	FlowParam.total_volume     = 0;
 	
 	/*MODULE: INIT_FLOW**********************************************************/
 	/*        Creates Active Cellular Automata lists and activates vents in them.
@@ -173,21 +155,23 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	            total number of active automata in the CA list
 	            total volume to erupt (combined volumes to erupt at vents)      */
 	
-	ret = INIT_FLOW(dataGrid,      /*DataCell  Global Data Grid                 */
+	ret = INIT_FLOW(&dataGrid,      /*DataCell  Global Data Grid                 */
 	               &CAList,        /*Automaton Active Cells List                */
 	               Vents,          /*VentArr   Vent Data Array                  */
-	               &CAListSize,    /*unsigned  Size of each empty CA List       */
-	               ventCount,      /*unsigned  Number of Vents                  */
-	               &ActiveCounter, /*unsigned  Number of active cells in CA List*/
-	               DEMmetadata,    /*double    Geographic Metadata              */
-	               &volumeToErupt  /*double    Volume that the model will expel */
+	               In,
+	               &FlowParam,
+	//               &CAListSize,    /*unsigned  Size of each empty CA List       */
+	//               ventCount,      /*unsigned  Number of Vents                  */
+	//               &ActiveCounter, /*unsigned  Number of active cells in CA List*/
+	               DEMmetadata    /*double    Geographic Metadata              */
+	//               &volumeToErupt  /*double    Volume that the model will expel */
 	              );
 	
 	/*Check for Error flag (INIT_FLOW returns <0 value)*/
-	if(ret<0) {
+	if(ret) {
 		printf("\nError [MAIN]: Error flag returned from [INIT_FLOW].\n");
 		printf("Exiting.\n");
-		return(-1);
+		return 1;
 	}
 	
 	
@@ -196,7 +180,7 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	/****************************************************************************/
 	/*MAIN FLOW LOOP: PULSE LAVA AND DISTRIBUTE TO CELLS*************************/
 	/****************************************************************************/
-	volumeRemaining = volumeToErupt; /*set countdown bookkeeper volumeRemaining*/
+	volumeRemaining = FlowParam.total_volume; /*set countdown bookkeeper volumeRemaining*/
 	
 	printf("\n                         Running Flow\n");
 	

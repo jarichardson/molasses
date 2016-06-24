@@ -29,7 +29,7 @@ double *DEM_LOADER(char *DEMfilename, DataCell ***grid, char *modeltype) {
 	
 	if((DEMGeoTransform = malloc (sizeof (double) * 6))==NULL) {
 		printf("ERROR [DEM_LOADER]: Out of Memory creating Metadata Array!\n");
-		return((double*) -1);
+		return (double*) NULL;
 	}
 	
 	/*DEMGeoTransform[0] lower left x
