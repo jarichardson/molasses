@@ -39,15 +39,12 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	char *phrase;        /* seed phrase for random number generator              */
 	int seed1;           /* random seed number */
  	int seed2;           /* random seed number */
-	int      i,j, ret;                  /*loop variables, function return value */
-	unsigned ventCount   = 0;           /*Number of Src Vents, def in INITIALIZE*/
+	int      i=0,j=0, ret=0;            /*loop variables, function return value */
 	int      pulseCount  = 0;           /*Current number of Main PULSE loops    */
 	
 	/*Physical Parameters*/
 	double   *DEMmetadata;              /*Geographic Coordinates of DEM Raster  */
-	double   volumeToErupt;             /*Total Volume to deliver to vent cells */
 	double   volumeErupted = 0;         /*Total Volume in All Active Cells      */
-	double   volumeRemaining;           /*Volume Remaining to be Erupted        */
 	
 	
 	/*TIME AND RANDOM NUMBER GEN*************************************************/
@@ -178,23 +175,20 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	/****************************************************************************/
 	/*MAIN FLOW LOOP: PULSE LAVA AND DISTRIBUTE TO CELLS*************************/
 	/****************************************************************************/
-	volumeRemaining = FlowParam.total_volume; /*set countdown bookkeeper volumeRemaining*/
 	
 	printf("\n                         Running Flow\n");
 	
 	
 	/*Loop to call PULSE and DISTRIBUTE only if volume remains to be erupted*/
-	while(volumeRemaining > 0) {
+	while(FlowParam.remaining_volume > 0) {
 		/*MODULE: PULSE************************************************************/
 		/*        Delivers lava to vents based on information in Vent Data Array.
 		          Returns total volume remaining to be erupted.                   */
 		
 		ret = PULSE(CAList,        /*Automaton Active Cells List               */
 		            &Vents,           /*VentArr   Vent Data Array                 */
-		            ActiveCounter, /*unsigned  Number of activ cells in CA List*/
-		            &volumeRemaining, /*double    Countdown Lava Volume bookkeeper*/
-		            ventCount,        /*unsigned  Number of vents                 */
-		            DEMmetadata       /*double    Geographic Metadata             */
+		            In,
+		            &FlowParam
 		           );
 		
 		/*Check for Error flags (PULSE returns <0 or 0 value)*/
@@ -204,7 +198,7 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 			return -1;
 		}
 		else if (ret) {
-			if (volumeRemaining) {
+			if (FlowParam.remaining_volume) {
 				/*This return should not be possible, 
 				  Pulse should return 0 if no volume remains*/
 				printf("\nERROR [MAIN]: Error between [PULSE] return and lava vol.\n");
@@ -219,8 +213,8 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 		  Continue, call Distribute module.*/
 		
 		/*Update status message on screen*/
-		printf("\rInundated Cells: %-7d; Volume Remaining: %10.2f",ActiveCounter,
-		       volumeRemaining);
+		fprintf(stderr,"\rInundated Cells: %-7d; Volume Remaining: %10.2f",
+		       FlowParam.active_count, FlowParam.remaining_volume);
 		
 		
 		/*MODULE: DISTRIBUTE*******************************************************/
@@ -230,8 +224,8 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 		
 		ret = DISTRIBUTE(dataGrid,          /*DataCell  Global Data Grid       */
 		                 CAList,         /*Automaton Active Cells List      */
-		                 &ActiveCounter, /*unsigned  Number of active cells */
-		                 DEMmetadata        /*double    Geographic Metadata    */
+		                 &FlowParam.active_count, /*unsigned  Number of active cells */
+		                 In.dem_grid_data        /*double    Geographic Metadata    */
 		                );
 		
 		/*Check for Error flag (DISTRIBUTE returns <0 value)*/
@@ -288,7 +282,7 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	printf("\n\n                     Single Flow Complete!\n");
 	
 	/*Print out final number of inundated cells*/
-	printf("Final Count: %d cells inundated.\n\n", ActiveCounter);
+	printf("Final Count: %d cells inundated.\n\n", FlowParam.active_count);
 	
 	
 	/*POST FLOW WRAP UP: CONSERVATION OF MASS CHECK******************************/
@@ -298,25 +292,25 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	
 	volumeErupted = 0;
 	/*For each Active Flow Cell, add cell lava volume to volumeErupted*/
-	for(i=1;i<=ActiveCounter;i++)
+	for(i=1;i<=FlowParam.active_count;i++)
 		volumeErupted += (CAList[i].thickness + 
 		               dataGrid[CAList[i].row][CAList[i].col].residual) *
-		               DEMmetadata[1] * DEMmetadata[5];
+		               In.dem_grid_data[1] * In.dem_grid_data[5];
 	
 	/*print out volume delivered to vents and total volume now in cells*/
 	printf("Conservation of mass check\n");
-	printf(" Total (IN) volume pulsed from vents:   %0.3f\n",volumeToErupt);
+	printf(" Total (IN) volume pulsed from vents:   %0.3f\n",FlowParam.total_volume);
 	printf(" Total (OUT) volume found in cells:     %0.3f\n",volumeErupted);
 	/*Double data types are precise to 1e-8, so make sure that volume IN and
 	  volume OUT are within this precision.*/
-	if(abs(volumeErupted-volumeToErupt)<=1e-8)
+	if(abs(volumeErupted-FlowParam.total_volume)<=1e-8)
 		printf(" SUCCESS: MASS CONSERVED\n");
 	/*If volumes are significantly different (are more than Double Precision diff.
 	  then mass is NOT conserved!!*/
 	else 
 		/*Print the mass excess*/
 		printf(" ERROR: MASS NOT CONSERVED! Excess: %0.2e m^3",
-		       volumeErupted-volumeToErupt);
+		       volumeErupted-FlowParam.total_volume);
 	
 	
 	/*MODULE: OUTPUT*************************************************************/
@@ -346,7 +340,7 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 			             ActiveCounter, /*unsigned  Number of active cells     */
 			             Filenames[i+3],   /*string    Output File Path           */
 			             i,                /*OUTPUT Code, see above               */
-			             DEMmetadata,""    /*string    Original Raster Projection */
+			             In.dem_grid_data,""    /*string    Original Raster Projection */
 			            );
 			
 			/*Check for Error flag (OUTPUT returns <0 value)*/

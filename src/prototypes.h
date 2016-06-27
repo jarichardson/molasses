@@ -6,7 +6,7 @@
 #include <rnglib.h>
 
 
-int PULSE(Automata*,VentArr**,unsigned,double*,unsigned,double*);
+int PULSE(Automata*,VentArr**,Inputs,FlowStats*);
 	/*args: Active CA List,
 	        Active Count,
 	        Total Pulse Volume, 

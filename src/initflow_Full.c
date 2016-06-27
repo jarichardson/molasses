@@ -324,5 +324,8 @@ int INIT_FLOW (DataCell ***dataGrid, Automata **CAList, VentArr *ventList,
 	fprintf(stderr, "----------------------------------------\n");
 	fprintf(stderr, "Total Volume: %16.3f cu. m.\n", param->total_volume);
 	
+	//copy total volume to remaining volume
+	param->remaining_volume = param->total_volume;
+	
 	return 0;
 }
