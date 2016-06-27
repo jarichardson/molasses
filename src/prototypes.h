@@ -37,7 +37,7 @@ unsigned ACTIVATE(DataCell**,Automata*,unsigned,unsigned,unsigned,char,char);
 		residual
 	*/
 
-int INIT_FLOW (DataCell***,Automata**,VentArr*,Inputs,FlowStats*,double*);
+int INIT_FLOW (DataCell***,Automata**,VentArr*,Inputs,FlowStats*,DataCell***);
 	/*args:
 		data array,
 		*active list,
@@ -60,10 +60,6 @@ Automata *NEIGHBOR_ID(Automata,DataCell**,double*,Automata*,int*);
 	  return: neighbor_list
 	*/
 
-DataCell **GLOBALDATA_INIT(unsigned,unsigned);
-	/*args: rows, colums
-	*/
-
 int DISTRIBUTE(DataCell**,Automata*,unsigned*,double*);
 	/*args: Global Grid, Active List, Active Count, DEM metadata*/
 
@@ -83,3 +79,6 @@ double *DEM_LOADER(char*, DataCell***,char*);
 	  TOPOG
 	  T_UNC
 	*/
+	
+	
+int CHOOSE_NEW_VENT(Inputs*, DataCell***, VentArr*);

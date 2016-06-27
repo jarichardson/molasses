@@ -31,6 +31,7 @@ typedef struct DataCell {
 	double residual;
 	double random_code;
 	double dem_elev;
+	long double prob;
 } DataCell;
 
 /*Input parameters*/
@@ -57,6 +58,8 @@ typedef struct Inputs {
 	unsigned vent_count;
 	unsigned runs;
 	unsigned flows;
+	double *dem_grid_data;
+	double *spd_grid_data;
 } Inputs;
 
 typedef struct FlowStats {

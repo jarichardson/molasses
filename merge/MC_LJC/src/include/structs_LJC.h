@@ -30,6 +30,7 @@ typedef struct DataCell {
 	double residual;
 	double random_code;
 	double dem_elev;
+	long double prob;
 	unsigned hit_count;
 } DataCell;
 

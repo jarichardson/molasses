@@ -77,7 +77,7 @@ double *DEM_LOADER(char *DEMfilename, DataCell ***grid, char *modeltype) {
 	/*DEMGeoTransform[0]; Lower left X value*/
 	
 	/*Output DEM metadata to the screen*/
-	printf("\nDEM read from %s file successfully.\n\nDEM Information:\n",
+	printf("\nRaster read from %s file successfully.\n\nraster information:\n",
 	       GDALGetDriverLongName( DEMDriver ) );
 	printf("  File:              %s\n", DEMfilename);
 	printf("  Lower Left Origin: (%.6f,%.6f)\n",
@@ -97,7 +97,7 @@ double *DEM_LOADER(char *DEMfilename, DataCell ***grid, char *modeltype) {
 	       (unsigned) DEMGeoTransform[4], (unsigned) DEMGeoTransform[2]);
 	
 	/*allocate memory for data grid*/
-	if(!strcmp(modeltype,"TOPOG")) {
+	if((!strcmp(modeltype,"TOPOG")) || (!strcmp(modeltype,"DENSITY"))) {
 		*grid = (DataCell**) GC_MALLOC((size_t)(DEMGeoTransform[4])*sizeof(DataCell*));
 		if (*grid==NULL){
 			printf("[GLOBALDATA_INIT]\n");
@@ -141,19 +141,18 @@ double *DEM_LOADER(char *DEMfilename, DataCell ***grid, char *modeltype) {
 			}
 	
 			/*Status Bar*/
-/*			if((i%50)==0) {*/
-/*				k=0;*/
-/*				printf("\r");*/
-/*				while(k<(DEMGeoTransform[4]-1)){*/
-/*		*/
-/*					if (k<i) printf("=");*/
-/*					else if((k-((DEMGeoTransform[4]-1)/60))<i) printf(">");*/
-/*					else printf(" ");*/
-/*					k+=DEMGeoTransform[4]/60;*/
-/*				} printf("| %3d%%",(int) (100*i/(DEMGeoTransform[4]-1)));*/
-/*			}*/
+			if((i%50)==0) {
+				k=0;
+				printf("\r");
+				while(k<(DEMGeoTransform[4]-1)){
+		
+					if (k<i) printf("=");
+					else if((k-((DEMGeoTransform[4]-1)/60))<i) printf(">");
+					else printf(" ");
+					k+=DEMGeoTransform[4]/60;
+				} printf("| %3d%%",(int) (100*i/(DEMGeoTransform[4]-1)));
+			}
 	
-				if ((i==1)||(i==0)) printf("\n\n");
 			/*Write elevation data column by column into 2D array using DEMgrid variable*/
 			for(j=0;j<DEMGeoTransform[2];j++) {
 				(*(*grid+i)+j)->dem_elev = pafScanline[j];
@@ -161,7 +160,7 @@ double *DEM_LOADER(char *DEMfilename, DataCell ***grid, char *modeltype) {
 		}
 	}
 	
-	if(strcmp(modeltype,"RESID")==0) {
+	else if(strcmp(modeltype,"RESID")==0) {
 		printf("              Loading RESIDUAL THICKNESS MODEL into Global Data Grid...\n");
 		
 		//DEMgrid = *grid; /*Assign pointer position to DEMgrid variable*/
@@ -199,7 +198,7 @@ double *DEM_LOADER(char *DEMfilename, DataCell ***grid, char *modeltype) {
 		}
 	}
 	
-	if(strcmp(modeltype,"T_UNC")==0) {
+	else if(strcmp(modeltype,"T_UNC")==0) {
 		printf("              Loading ELEVATION UNCERTAINTY into Global Data Grid...\n");
 		
 		//DEMgrid = *grid; /*Assign pointer position to DEMgrid variable*/
@@ -236,13 +235,51 @@ double *DEM_LOADER(char *DEMfilename, DataCell ***grid, char *modeltype) {
 			}
 		}
 	}
+	else if(!strcmp(modeltype,"DENSITY")) {
+		printf("              Loading Spatial Density Map into Data Grid...\n");
+		
+		for(i=0;i<DEMGeoTransform[4];i++) { /*For each row*/
+			/*calculate row so bottom row is read into data array first*/
+			YOff = (DEMGeoTransform[4]-1) - i;
 	
+			/*Read elevation data from row in input raster*/
+			if((GDALRasterIO(DEMBand, GF_Read, 0, YOff, DEMGeoTransform[2], 1, 
+					             pafScanline, DEMGeoTransform[2], 1, GDT_Float32, 0, 0))
+				 != CE_None) {
+				printf("\nERROR [DEM_LOADER]: DEM Elevation Data could not be read!\n");
+				printf("  File:  %s\n", DEMfilename);
+				return((double*) NULL);
+			}
+	
+			/*Status Bar*/
+			if((i%50)==0) {
+				k=0;
+				printf("\r");
+				while(k<(DEMGeoTransform[4]-1)){
+		
+					if (k<i) printf("=");
+					else if((k-((DEMGeoTransform[4]-1)/60))<i) printf(">");
+					else printf(" ");
+					k+=DEMGeoTransform[4]/60;
+				} printf("| %3d%%",(int) (100*i/(DEMGeoTransform[4]-1)));
+			}
+			/*Write elevation data column by column into 2D array using DEMgrid variable*/
+			for(j=0;j<DEMGeoTransform[2];j++) {
+				(*(*grid+i)+j)->prob = pafScanline[j];
+			}
+		}
+	}
+	else {
+		CPLFree(pafScanline);
+		printf("\nERROR [DEM_LOADER]: Modeltype '%s' not known!\n", modeltype);
+		return((double*) NULL);
+	}
 	
 	CPLFree(pafScanline);
 	
 	
 	printf("\r==========================================================:)| 100%%");
-	printf("\n                          DEM Loaded.\n\n");
+	printf("\n                        Raster Loaded.\n\n");
 	
 	return(DEMGeoTransform);
 

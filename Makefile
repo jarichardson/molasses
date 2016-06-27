@@ -12,6 +12,7 @@ export distribute        = 00
 export neighbor_ID       = 8
 export activate          = Par
 export output            = 00
+export choose_new_vent   = raster
 
 
 # Linking and compiling variables: Alter as needed for your system.

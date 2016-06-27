@@ -1,61 +1,9 @@
-/* sub choose_new_vent {
-    
-  my $spatial_density = $_[0];
-  my $num_vents = $_[1];
-  my $sd_spacing = $_[2];
-  my @lambda;
-  my $sum;
-  my $random;
-  my $sum_lambda = 0;
-  
-  open(SP_DENSITY, "+<$spatial_density") or die ("cannot open $spatial_density: $!");
-	my  @lines = <SP_DENSITY>;
-  close SP_DENSITY;
-  
-  # Sum data values over area of interest
-  for my $i (0..$#lines) {
-    (my $east, my $north, my $data) = split(" ", $lines[$i]);
-    $sum_lambda += $data;
-    $lambda[$i]{east} = $east;
-    $lambda[$i]{north} = $north;
-    $lambda[$i]{data} = $data;
-  }
-  
-  printf STDERR "spatial density sums to: %g\n", $sum_lambda;
-  my $half = $sd_spacing/2;
-  my $new_east; my $new_north;
-  for (my $vent = 0; $vent < $num_vents; $vent++) {
-    # Choose a random number between 0 and calculated sum of data values
-    $random = random_uniform(1,0,$sum_lambda);
-  
-    $sum = 0;
-    my $i = 0;
-    #printf "Random Value chosen: %g\n",$random;
-    # Select grid for new vent based on the random value
-    while ($sum < $random) {
-      $sum += $lambda[$i]{data};
-      $i++;
-    }
-    # Choose random and northing and easting for new vent within chosen grid cell
-    my $left = $lambda[$i]{east} - $half;
-    my $right = $lambda[$i]{east} + $half;
-    $new_east = random_uniform_integer(1,$left,$right);
-    
-    my $top = $lambda[$i]{north} + $half;
-    my $bot = $lambda[$i]{north} - $half;
-    $new_north = random_uniform_integer(1,$bot,$top);
-    #printf STDERR "%.1f  %.1f\n",  $new_east, $new_north;
-  }
-  return $new_east, $new_north;
-}
-
-*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
-#include "include/prototypes_LJC.h"
+#include "prototypes.h"
 
 #define CR 13            /* Decimal code of Carriage Return char */
 #define LF 10            /* Decimal code of Line Feed char */
@@ -76,143 +24,76 @@
   my $random;
   my $sum_lambda = 0;
 */
-int CHOOSE_NEW_VENT(Inputs *In, VentArr *Vents) {
-	double sum_lambda = 0, sum = 0, half, random, left, right, top, bot, new_east, new_north;
-	unsigned ct, i, num_grids, grid_spacing;
-	SpatialDensity *grid = Vents->spd_grd;
+int CHOOSE_NEW_VENT(Inputs *In, DataCell ***SpDens ,VentArr *Vent) {
+	double sum_lambda = 0, sum = 0, random;
+	unsigned i,j;
 	
-	num_grids = In->num_grids;
-	grid_spacing = In->spd_grid_spacing;
+	//If the Spatial Density Grid is NULL, declare it by loading in the SPD FILE
+	if (*SpDens==NULL) {
+		fprintf(stderr, "\nLoading Vent Spatial Density file...\n");
+		In->spd_grid_data = DEM_LOADER(In->spd_file,
+		                        SpDens,
+		                        "DENSITY"
+		                       );
+		if ((In->spd_grid_data == NULL) || (*SpDens == NULL)) {
+			fprintf(stderr, "\nError [CHOOSE_NEW_VENT]: ");
+			fprintf(stderr, "Error flag returned from DEM_LOADER[DENSITY].\n");
+			return 1;
+		}
+	}
 	
-	/*Sum data values over area of interest*/
-	for (ct = 0; ct < num_grids; ct++) {
-    	sum_lambda += (grid+ct)->prob;
-  	}
-  
-	fprintf (stderr, "spatial density sums to: %0.2g\n", sum_lambda);
-	half = (double)grid_spacing/2.0;
-  	
-    /* Choose a random number between 0 and calculated sum of data values */
-    random = (double) genunf ( (float) 0, (float) sum_lambda ); /*random_uniform(1,0,$sum_lambda); */
-  	sum = 0;
-    i = 0;
-    /* fprintf (stderr, "Random Value chosen: %g\n",random); */
-    
-    /* Select grid value for new vent based on the random value */
-    while (sum < random) {
-      	sum += (grid + i++)->prob;
-    }
-    
-    /* Choose random and northing and easting for new vent within chosen grid cell */
-    left = (double)(grid + i)->easting - half;
-    right = (double)(grid + i)->easting + half;
-    new_east = (double) ignuin ( (int) left, (int) right ); /*random_uniform_integer(1,$left,$right); */
-    top = (grid + i)->northing + half;
-    bot = (grid + i)->northing - half;
-    new_north = (double) ignuin ( (int) bot, (int) top); /* random_uniform_integer(1,$bot,$top) */
-	/*fprintf (stderr, "%f  %f ",  new_east, new_north);*/
-	Vents->easting = new_east;
-	Vents->northing = new_north;
-	fprintf (stderr, " New Vent [%0.0f  %0.0f]\n",  Vents->easting, Vents->northing);
+	/*Metadata:
+	  In->spd_grid_data[0] lower left x
+	  In->spd_grid_data[1] w-e pixel resolution
+	  In->spd_grid_data[2] number of cols
+	  In->spd_grid_data[3] lower left y
+	  In->spd_grid_data[4] number of lines
+	  In->spd_grid_data[5] n-s pixel resolution */
+	
+	//Integrate the spatial density within the grid
+	for(i=0; i < In->spd_grid_data[4]; i++) {
+		for(j=0; j < In->spd_grid_data[2]; j++) {
+			sum_lambda += (*(*SpDens+i)+j)->prob;
+		}
+	}
+	if (sum_lambda <=0 ) {
+		fprintf(stderr, "\nError [CHOOSE_NEW_VENT]: Spatial Density sums to <= 0!!\n");
+		return 1;
+	}
+	
+	fprintf(stderr,"New Vent Location:");
+	
+	//Choose a random number (0 to integrated density) to match to a grid cell
+	random = (double) genunf ( (float) 0, (float) sum_lambda );
+	
+	j=i=0;
+	while (sum < random) {
+		sum += (*(*SpDens+i)+(j++))->prob;
+		if (j == (In->spd_grid_data[2])){
+			i++;
+			j=0;
+		}
+	}
+	//j will be one step too far after this loop, so let's take 1 step back.
+	if(j==0) {
+		j=In->spd_grid_data[2];
+		i--;
+	}
+	j--;
+	
+	Vent->northing = In->spd_grid_data[3] + (i * In->spd_grid_data[5]);
+	Vent->easting = In->spd_grid_data[0] + (j * In->spd_grid_data[1]);
+	
+	//Choose a random location within the cell
+	Vent->northing += ((double) genunf ( (float) 0, (float) 1)) * 
+	                   In->spd_grid_data[5];
+	Vent->easting  += ((double) genunf ( (float) 0, (float) 1)) * 
+	                   In->spd_grid_data[1];
+	
+	
+	fprintf(stderr,"  %0.3f e, %0.3f n\n",Vent->easting,Vent->northing);
+	
+	
   	return 0;
 	
 }
-
-/************************************
-returns number of rows in file
-************************************/
-unsigned int count_rows(char file[], long len) {
-/**************************************/
-
-  unsigned int NumRows = 0;
-  long totc = 0L;
-  char * fp;
-  
-  fp = file;
-  while (totc < len) { 
-    while (*fp != LF && *fp != CR) {   
-      fp++;
-      totc++;
-    }    
-    while (*fp == CR || *fp == LF) {  
-        totc++; 
-        fp++;
-     }
-     NumRows++; 
-  }
-  return NumRows;    
-}
-
-/**************************************
-reads spatial density values from file
-and loads array structure (grid)
-**************************************/
-int load_spd_data(FILE *Opener, VentArr *Vents, int *ct) {
-	
-	long len, num;
-	char *lines, *fp;
-	int Nrows;
-	long totc = 0L;
-  	long ind = 0L;
-  	char *here, *one_line;
-	
-	fseek(Opener, 0L, SEEK_END);  /* Position to end of file */
-	len = ftell(Opener);          /* Get file length */
-	rewind(Opener);               /* Back to start of file */
-			
-	lines = (char *)GC_MALLOC((size_t)((len + 1) * sizeof(char)));
-	if (lines == NULL ) {
-    	fprintf(stderr, 
-                "\n[load_spd_data]: Insufficient memory to read spatial density filefile: %s (%u)\n", 
-                strerror(errno), errno);
-        return 1;
-  	}
-
-	num = fread(lines, len, 1, Opener); /* Read the entire file into array */
-	lines[len] = '\0';
-	Nrows = count_rows(lines, len);
-	/* fprintf(stderr, "\nReading %ld file with %ld bytes and %d rows ", num, len, Nrows); */
-	Vents->spd_grd = (SpatialDensity *)GC_MALLOC(( (size_t)Nrows * sizeof(SpatialDensity)));
-	if (Vents->spd_grd == NULL) {
-    	fprintf(stderr, 
-                "\n[load_spd_data]: Cannot malloc memory for spatial densty grid:[%s] (%u)\n", 
-                strerror(errno), errno);
-    	return 1;
-    }
-	fp = lines;
-	*ct = 0;
-	while (totc < len) {
-    	ind = 0L;          
-    	here = fp; 
-    	while (*fp != LF && *fp != CR) {   
-      		fp++;
-      		totc++;
-      		ind++;
-    	}
-    	while (*fp == CR || *fp == LF) {  
-      		totc++; 
-      		fp++;
-    	}
-		one_line = (char *)GC_MALLOC((ind+1) * sizeof(char));
-    	if (one_line == NULL) {
-      		fprintf(stderr, 
-                    "\n[load_spd_data]: Cannot malloc memory for line:%s (%u)\n", 
-                    strerror(errno), errno);
-      		return 1;
-    	}
-    	strncpy(one_line, here, ind);
-    	one_line[ind] = '\0';
-        if (one_line[0] == '#' || one_line[0] == LF || one_line[0] == ' '|| one_line[0] == CR) continue;
-		
-			/*print incoming parameter*/
-			/*split line into 3 number separated by space*/
-			sscanf (one_line,
-			        "%lf %lf %Lf\n", 
-			        &(Vents->spd_grd + *ct)->easting, 
-			        &(Vents->spd_grd + *ct)->northing, 
-			        &(Vents->spd_grd + *ct)->prob); 
-			(*ct)++;
-	}
-	return 0;
-}
-

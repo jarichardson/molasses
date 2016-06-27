@@ -30,10 +30,15 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	VentArr  *Vents;                    /*Source Vent List                      */
 	unsigned ActiveCounter = 0;            /*Number of Active Cells in CA List     */
 	FlowStats FlowParam;                   //Flow parameter information
+	DataCell **SpatialDensity = NULL;
 	
 	/*Model Parameters*/
 	Inputs In;           /* Structure to hold model inputs named in Config file  */
 	Outputs Out;         /* Structure to hold model outputs named in config file */
+	int size;            /* variable used for creating seed phrase               */
+	char *phrase;        /* seed phrase for random number generator              */
+	int seed1;           /* random seed number */
+ 	int seed2;           /* random seed number */
 	int      i,j, ret;                  /*loop variables, function return value */
 	unsigned ventCount   = 0;           /*Number of Src Vents, def in INITIALIZE*/
 	int      pulseCount  = 0;           /*Current number of Main PULSE loops    */
@@ -46,9 +51,26 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	
 	
 	/*TIME AND RANDOM NUMBER GEN*************************************************/
-	startTime = time(NULL); /*Define Start Time*/
-	srand(time(NULL));      /*Seed random number generator*/
+	GC_INIT();
+	/* Define Start Time */
+	startTime = time(NULL); 
+	/* Seed random number generator */
+	srand(time(NULL));             
+	size = (size_t)(int)(startTime + 1);
 	
+	phrase = (char *)GC_MALLOC_ATOMIC(((size_t)size * sizeof(char)));	
+  	if (phrase == NULL) {
+    	fprintf(stderr, "Cannot malloc memory for seed phrase:[%s]\n", strerror(errno));
+    	return 1;
+    }
+    snprintf(phrase, size, "%d", (int)startTime);
+    
+	/* Initialize the generators. */
+  	initialize ( );
+	/* Set the seeds based on the phrase. */
+  	phrtsd ( phrase, &seed1, &seed2 );
+	/* Initialize all generators. */
+  	set_initial_seed ( seed1, seed2 );
 	/*WELCOME USER TO SIMULATION AND CHECK FOR CORRECT USAGE*********************/
 	printf("\n\n               MOLASSES is a lava flow simulator.\n\n");
 	
@@ -102,41 +124,18 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 		          [5] n-s pixel resolution (negative value)                       */
 	
 	/*Assign Topography to Data Grid Locations*/
-	DEMmetadata = DEM_LOADER(In.dem_file, /*char            DEM file name   */
+	In.dem_grid_data = DEM_LOADER(In.dem_file, /*char            DEM file name   */
 	                         &dataGrid,    /*DataCell        Global Data Grid*/
 	                         "TOPOG"       /*DEM_LOADER Code Topography      */
 	                        );
 	/*Check for Error flag (DEM_LOADER returns a null metadata list)*/
-	if(DEMmetadata==NULL){
+	if(In.dem_grid_data==NULL){
 		printf("\nError [MAIN]: Error flag returned from DEM_LOADER[TOPOG].\n");
 		printf("Exiting.\n");
 		return(-1);
 	}
 	
 	
-	/*Assign Elevation Uncertainty to Data Grid Locations*/
-	/*If elevationUncertainty is -1, user input an elevation uncertainty map*/
-	if(In.elev_uncert==-1) {
-		DEMmetadata = DEM_LOADER(In.uncert_map, /*char            uncertny filename*/
-			                       &dataGrid,    /*DataCell        Global Data Grid */
-			                       "T_UNC"       /*DEM_LOADER Code elev uncertainty */
-			                      );
-		/*Check for Error flag (DEM_LOADER returns a null metadata list)*/
-		if(DEMmetadata==NULL){
-			printf("\nError [MAIN]: Error flag returned from DEM_LOADER[T_UNC].\n");
-			printf("Exiting.\n");
-			return(-1);
-		}
-	}
-	/*If elevationUncertainty is not -1, it is constant globally.*/
-	else {
-		/*Write elevation uncertainty values into 2D Global Data Array*/
-		for(i=0;i<DEMmetadata[4];i++) {
-			for(j=0;j<DEMmetadata[2];j++) {
-				dataGrid[i][j].elev_uncert = In.elev_uncert;
-			}
-		}
-	}
 	
 	//Initialize Flow Parameter Set
 	FlowParam.ca_list_size     = 0;
@@ -156,14 +155,14 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	            total volume to erupt (combined volumes to erupt at vents)      */
 	
 	ret = INIT_FLOW(&dataGrid,      /*DataCell  Global Data Grid                 */
-	               &CAList,        /*Automaton Active Cells List                */
-	               Vents,          /*VentArr   Vent Data Array                  */
-	               In,
-	               &FlowParam,
+	                &CAList,        /*Automaton Active Cells List                */
+	                Vents,          /*VentArr   Vent Data Array                  */
+	                In,
+	                &FlowParam,
+	                &SpatialDensity
 	//               &CAListSize,    /*unsigned  Size of each empty CA List       */
 	//               ventCount,      /*unsigned  Number of Vents                  */
 	//               &ActiveCounter, /*unsigned  Number of active cells in CA List*/
-	               DEMmetadata    /*double    Geographic Metadata              */
 	//               &volumeToErupt  /*double    Volume that the model will expel */
 	              );
 	
@@ -173,7 +172,6 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 		printf("Exiting.\n");
 		return 1;
 	}
-	
 	
 	
 	
