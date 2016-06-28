@@ -49,16 +49,12 @@ typedef struct Inputs {
 	double max_residual;
 	double log_mean_residual;
 	double log_std_residual;
-	double min_pulse_volume;
-	double max_pulse_volume;
-	double min_total_volume;
-	double max_total_volume;
-	double log_mean_volume;
-	double log_std_volume;
 	unsigned vent_count;
 	unsigned runs;
+	int start;
 	unsigned flows;
 	double *dem_grid_data;
+	char *dem_proj;
 	double *spd_grid_data;
 } Inputs;
 
@@ -76,8 +72,22 @@ typedef struct FlowStats {
 typedef struct Outputs {
 	char *ascii_flow_file;
 	char *ascii_hits_file;
+	char *raster_hits_file;
+	char *raster_flow_file;
+	char *raster_post_topo;
+	char *raster_pre_topo;
+	char *stats_file;
 } Outputs;
 
+typedef enum  {
+	ascii_flow,
+	ascii_hits,
+	raster_hits,
+	raster_flow,
+	raster_post,
+	raster_pre,
+	stats_file
+} File_output_type;
 
 /*Vent Information*/
 typedef struct VentArr {
@@ -93,6 +103,7 @@ typedef struct VentArr {
 	double min_pulsevolume;
 	double max_pulsevolume;
 } VentArr;
+
 
 /*Global Variables*/
 time_t startTime;

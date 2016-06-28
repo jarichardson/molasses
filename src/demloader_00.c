@@ -156,6 +156,9 @@ double *DEM_LOADER(char *DEMfilename, DataCell ***grid, char *modeltype) {
 			/*Write elevation data column by column into 2D array using DEMgrid variable*/
 			for(j=0;j<DEMGeoTransform[2];j++) {
 				(*(*grid+i)+j)->dem_elev = pafScanline[j];
+				//Initialize a few more variables here
+				(*(*grid+i)+j)->active = 0;
+				(*(*grid+i)+j)->hit_count = 0;
 			}
 		}
 	}

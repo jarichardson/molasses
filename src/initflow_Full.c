@@ -4,7 +4,7 @@
 //               unsigned *CAListSize, unsigned ventCount,
 //               unsigned param->active_count, double *gridInfo, double *totalVolume) {
 int INIT_FLOW (DataCell ***dataGrid, Automata **CAList, VentArr *ventList, 
-               Inputs In, FlowStats *param, DataCell ***spdGrid) {
+               Inputs *In, FlowStats *param, DataCell ***spdGrid) {
 /* Module INIT_FLOW
 	creates Cellular Automata Lists (active cell list)
 	checks that all vents are within DEM area
@@ -35,32 +35,31 @@ int INIT_FLOW (DataCell ***dataGrid, Automata **CAList, VentArr *ventList,
 	// 3. assign new elevations if needed
 	
 	//Remove previous active indices
-	if(param->run) { //If positive value, this is not first run!
-		for(i=0; i < In.dem_grid_data[4]; i++) {
-			for(j=0; j < In.dem_grid_data[2]; j++) {
+	if(param->run > In->start) { //If positive value, this is not first run!
+		for(i=0; i < In->dem_grid_data[4]; i++) {
+			for(j=0; j < In->dem_grid_data[2]; j++) {
 				(*(*dataGrid+i)+j)->active = 0;
 			}
 		}
 	}
 	
-	
 	// assign/reassign residual values
-	if ((In.residual > 0) && (!param->run)) { //if 1st run and resid set by user
-		for(i=0; i < In.dem_grid_data[4]; i++) {
-			for(j=0; j < In.dem_grid_data[2]; j++) {
-				(*(*dataGrid+i)+j)->residual = In.residual;
+	if ((In->residual > 0) && (param->run == In->start)) { //if 1st run and resid set by user
+		for(i=0; i < In->dem_grid_data[4]; i++) {
+			for(j=0; j < In->dem_grid_data[2]; j++) {
+				(*(*dataGrid+i)+j)->residual = In->residual;
 			}
 		}
 	}
-	else if (In.residual == 0) { //if residual is probabilistic
+	else if (In->residual == 0) { //if residual is probabilistic
 		//calculate a residual for this flow
-		if ((In.log_mean_residual > 0) && (In.log_std_residual > 0)) {
+		if ((In->log_mean_residual > 0) && (In->log_std_residual > 0)) {
 			//log normal distribution
-			log_min = log10(In.min_residual);
-			log_max = log10(In.max_residual);
+			log_min = log10(In->min_residual);
+			log_max = log10(In->max_residual);
 			//This produces a pseudorandom number w/ RANLIB's normal distribution gen
-			while ( param->residual = (double) gennor ( (float) In.log_mean_residual,
-			                                            (float) In.log_std_residual  ),
+			while ( param->residual = (double) gennor ( (float) In->log_mean_residual,
+			                                            (float) In->log_std_residual  ),
 			        param->residual > log_max || param->residual < log_min
 			      );
 			param->residual = pow(10, param->residual);
@@ -68,24 +67,25 @@ int INIT_FLOW (DataCell ***dataGrid, Automata **CAList, VentArr *ventList,
 		else {
 			//uniform distribution
 			//This produces a pseudorandom number w/ RANLIB's uniform distribution gen
-			param->residual = (double) genunf ( (float) In.min_residual, 
-			                                    (float) In.max_residual );
+			param->residual = (double) genunf ( (float) In->min_residual, 
+			                                    (float) In->max_residual );
 		}
 		
-		//Assign to param->residual NOT In.residual.
-		for(i=0; i < In.dem_grid_data[4]; i++) {
-			for(j=0; j < In.dem_grid_data[2]; j++) {
+		//Assign to param->residual NOT In->residual.
+		for(i=0; i < In->dem_grid_data[4]; i++) {
+			for(j=0; j < In->dem_grid_data[2]; j++) {
 				(*(*dataGrid+i)+j)->residual = param->residual;
 			}
 		}
 	}
-	else if (In.residual == -1) { //if residual is a map
-		In.dem_grid_data = DEM_LOADER(In.residual_map, /*char            Residual filename*/
+	else if ((In->residual == -1) &&
+	        (param->run == In->start)) { //if residual is a map (only do this first run)
+		In->dem_grid_data = DEM_LOADER(In->residual_map, /*char            Residual filename*/
 			                     dataGrid,    /*DataCell        Global Data Grid */
 			                     "RESID"       /*DEM_LOADER Code Resid Thickness  */
 			                    );
 		/*Check for Error flag (DEM_LOADER returns a null metadata list)*/
-		if(In.dem_grid_data == NULL){
+		if(In->dem_grid_data == NULL){
 			fprintf(stderr, 
 			        "\nError [INIT_FLOW]: Error flag returned from DEM_LOADER[RESID].\n");
 			return 1;
@@ -94,38 +94,38 @@ int INIT_FLOW (DataCell ***dataGrid, Automata **CAList, VentArr *ventList,
 	
 	
 	// assign/reassign elevations
-	if ((In.elev_uncert == 0) && (!param->run)) { //if 1st run and elevations are "true"
-		for(i=0; i < In.dem_grid_data[4]; i++) {
-			for(j=0; j < In.dem_grid_data[2]; j++) {
+	if ((In->elev_uncert == 0) && (param->run == In->start)) { //if 1st run and elevations are "true"
+		for(i=0; i < In->dem_grid_data[4]; i++) {
+			for(j=0; j < In->dem_grid_data[2]; j++) {
 				(*(*dataGrid+i)+j)->elev = (*(*dataGrid+i)+j)->dem_elev;
 			}
 		}
 	}
-	else if ( In.elev_uncert > 0 ) { //if elevation has uncertainty, reassign elevs
-		for(i=0; i < In.dem_grid_data[4]; i++) {
-			for(j=0; j < In.dem_grid_data[2]; j++) {
+	else if ( In->elev_uncert > 0 ) { //if elevation has uncertainty, reassign elevs
+		for(i=0; i < In->dem_grid_data[4]; i++) {
+			for(j=0; j < In->dem_grid_data[2]; j++) {
 				//This produces a pseudorandom number w/ RANLIB's normal distribution gen
 				(*(*dataGrid+i)+j)->elev = (double) gennor ( 
 				                           (float) (*(*dataGrid+i)+j)->dem_elev,
-				                           (float) In.elev_uncert );
+				                           (float) In->elev_uncert );
 			}
 		}
 	}
-	else if ( In.elev_uncert == -1 ) { //if elev_uncert is a file
+	else if ( In->elev_uncert == -1 ) { //if elev_uncert is a file
 		//load in elevation uncertainty values for each cell
-		In.dem_grid_data = DEM_LOADER(In.uncert_map, /*char            uncertny filename*/
+		In->dem_grid_data = DEM_LOADER(In->uncert_map, /*char            uncertny filename*/
 			                       dataGrid,    /*DataCell        Global Data Grid */
 			                       "T_UNC"       /*DEM_LOADER Code elev uncertainty */
 			                      );
 		/*Check for Error flag (DEM_LOADER returns a null metadata list)*/
-		if ( In.dem_grid_data == NULL ) {
+		if ( In->dem_grid_data == NULL ) {
 			fprintf(stderr, 
 			       "\nError [INIT_FLOW]: Error flag returned from DEM_LOADER[T_UNC].\n");
 			return 1;
 		}
 		
-		for(i=0; i < In.dem_grid_data[4]; i++) {
-			for(j=0; j < In.dem_grid_data[2]; j++) {
+		for(i=0; i < In->dem_grid_data[4]; i++) {
+			for(j=0; j < In->dem_grid_data[2]; j++) {
 			/*RANDOMIZE ELEVATIONS IF NEEDED*/
 				/*if elev_uncert is essentially 0 (within Double Precision of 0), copy
 					DEM elevation to the Flow Elevation.*/
@@ -142,12 +142,14 @@ int INIT_FLOW (DataCell ***dataGrid, Automata **CAList, VentArr *ventList,
 		}
 	}
 	
+	
+	
 	/*CELLULAR AUTOMATA LIST PREPARATION*****************************************/
 	/*Create CA List if it has never been created!*/
 	if (*CAList==NULL) {
 	
 		//The maximum number of possible cells is the size of the map grid
-		param->ca_list_size = In.dem_grid_data[4] * In.dem_grid_data[2];
+		param->ca_list_size = In->dem_grid_data[4] * In->dem_grid_data[2];
 	
 		//Alternatively, The maximum number of possible cells can be decided by 3 considerations
 		//1: The theoretical maximum-possible-cell flow geometry would be a long 1-cell wide line of lava, at residual thickness, with all neighboring cells inundated with >~0 m of lava.
@@ -179,6 +181,8 @@ int INIT_FLOW (DataCell ***dataGrid, Automata **CAList, VentArr *ventList,
 		}
 	}
 	
+	
+	
 	/*Initialize or reinitialize the CA List*/
 	for(i=0; i < param->ca_list_size; i++) {
 		(*CAList+i)->row = UINT_MAX;
@@ -194,11 +198,12 @@ int INIT_FLOW (DataCell ***dataGrid, Automata **CAList, VentArr *ventList,
 	//Reset number of active cells in the flow to 0
 	param->active_count=0;
 	
+	
 	/*CHOOSE NEW VENT LOCATION IF NEEDED*****************************************/
-	/*Find new vent location if In.vent_count = 0*/
-	if (In.vent_count == 0) {
+	/*Find new vent location if In->vent_count = 0*/
+	if (In->vent_count == 0) {
 		/*MODULE: CHOOSE NEW VENT*/
-		ret = CHOOSE_NEW_VENT(&In, spdGrid, &ventList[0]);
+		ret = CHOOSE_NEW_VENT(In, spdGrid, &ventList[0]);
 		if (ret) {
 			fprintf(stderr, "\n[MAIN]: Error flag returned from [CHOOSE_NEW_VENT].\n");
 			fprintf(stderr, "Exiting.\n");
@@ -207,33 +212,33 @@ int INIT_FLOW (DataCell ***dataGrid, Automata **CAList, VentArr *ventList,
 		
 		param->vent_count = 1;
 	}
-	else param->vent_count = In.vent_count;
+	else param->vent_count = In->vent_count;
 	
 	
 	/*LOAD VENTS INTO CA LIST****************************************************/
 	for(i=0; i < param->vent_count; i++) {
 		/*check that each vent is inside global grid*/
 		if((ventRow = (unsigned)
-		  (((ventList+i)->northing-In.dem_grid_data[3])/In.dem_grid_data[5])) < 0) {
+		  (((ventList+i)->northing-In->dem_grid_data[3])/In->dem_grid_data[5])) < 0) {
 			fprintf(stderr, "\nERROR [INIT_FLOW]:");
 			fprintf(stderr, " Vent not within region covered by DEM! (SOUTH of region)\n");
 			fprintf(stderr, " Vent #%u at cell: [%u][%u].\n",
 			       (i+1),
 			       ventRow,
-			       (unsigned) (((ventList+i)->easting-In.dem_grid_data[0])/In.dem_grid_data[1]));
+			       (unsigned) (((ventList+i)->easting-In->dem_grid_data[0])/In->dem_grid_data[1]));
 			return 1;
 		}
-		else if(ventRow >= In.dem_grid_data[4]) {
+		else if(ventRow >= In->dem_grid_data[4]) {
 			fprintf(stderr, "\nERROR [INIT_FLOW]:");
 			fprintf(stderr, " Vent not within region covered by DEM! (NORTH of region)\n");
 			fprintf(stderr, " Vent #%u at cell: [%u][%u].\n",
 			       (i+1),
 			       ventRow,
-			       (unsigned) (((ventList+i)->easting-In.dem_grid_data[0])/In.dem_grid_data[1]));
+			       (unsigned) (((ventList+i)->easting-In->dem_grid_data[0])/In->dem_grid_data[1]));
 			return 1;
 		}
 		else if((ventCol = (unsigned) 
-		       (((ventList+i)->easting-In.dem_grid_data[0])/In.dem_grid_data[1])) < 0) {
+		       (((ventList+i)->easting-In->dem_grid_data[0])/In->dem_grid_data[1])) < 0) {
 			fprintf(stderr, "\nERROR [INIT_FLOW]:");
 			fprintf(stderr, " Vent not within region covered by DEM! (WEST of region)\n");
 			fprintf(stderr, " Vent #%u at cell: [%u][%u].\n",
@@ -242,7 +247,7 @@ int INIT_FLOW (DataCell ***dataGrid, Automata **CAList, VentArr *ventList,
 			       ventCol);
 			return 1;
 		}
-		else if(ventCol >= In.dem_grid_data[2]) {
+		else if(ventCol >= In->dem_grid_data[2]) {
 			fprintf(stderr, "\nERROR [INIT_FLOW]:");
 			fprintf(stderr, " Vent not within region covered by DEM! (EAST of region)\n");
 			fprintf(stderr, " Vent #%u at cell: [%u][%u].\n",
@@ -318,6 +323,9 @@ int INIT_FLOW (DataCell ***dataGrid, Automata **CAList, VentArr *ventList,
 		
 		/*Add current vent's volume to total volume in.*/
 		param->total_volume += (ventList+i)->totalvolume;
+		
+		/*Make vent's remaining volume the total volume*/
+		(ventList+i)->remainingvolume = (ventList+i)->totalvolume;
 	}
 	
 	/*Print total volume.*/

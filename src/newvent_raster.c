@@ -61,7 +61,8 @@ int CHOOSE_NEW_VENT(Inputs *In, DataCell ***SpDens ,VentArr *Vent) {
 		return 1;
 	}
 	
-	fprintf(stderr,"New Vent Location:");
+	
+	//fprintf(stderr,"New Vent Location:");
 	
 	//Choose a random number (0 to integrated density) to match to a grid cell
 	random = (double) genunf ( (float) 0, (float) sum_lambda );
@@ -91,7 +92,7 @@ int CHOOSE_NEW_VENT(Inputs *In, DataCell ***SpDens ,VentArr *Vent) {
 	                   In->spd_grid_data[1];
 	
 	
-	fprintf(stderr,"  %0.3f e, %0.3f n\n",Vent->easting,Vent->northing);
+	//fprintf(stderr,"  %0.3f e, %0.3f n\n",Vent->easting,Vent->northing);
 	
 	
   	return 0;

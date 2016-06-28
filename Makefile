@@ -11,7 +11,7 @@ export pulse             = Full
 export distribute        = 00
 export neighbor_ID       = 8
 export activate          = Par
-export output            = 00
+export output            = Full
 export choose_new_vent   = raster
 
 

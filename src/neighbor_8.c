@@ -60,15 +60,15 @@ Automata *NEIGHBOR_ID(Automata cCell, DataCell **grid, double *gridMetadata,
 		return(neighborList);
 	} else if (uRow >= gridMetadata[4]) {
 		printf("\nFLOW IS OFF THE MAP! (North) [NEIGHBOR_ID]\n");
-		*neighborCount = -2;
+		*neighborCount = -1;
 		return(neighborList);
 	} else if (lCol < 0) {
 		printf("\nFLOW IS OFF THE MAP! (West) [NEIGHBOR_ID]\n");
-		*neighborCount = -3;
+		*neighborCount = -1;
 		return(neighborList);
 	} else if (rCol >= gridMetadata[2]) {
 		printf("\nFLOW IS OFF THE MAP! (East) [NEIGHBOR_ID]\n");
-		*neighborCount = -4;
+		*neighborCount = -1;
 		return(neighborList);
 	}
 

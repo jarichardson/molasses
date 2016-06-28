@@ -39,7 +39,7 @@ check: all
 	@echo "*** All TESTS PASSED ***"
 
 clean:
-	$(RM) *.o *~ $(MAIN) pcheck/out pcheck/*~
+	$(RM) *.o *~ $(MAIN) pcheck/out pcheck/*~ pcheck/stats pcheck/*tif
 
 install:
 	install -d $(INSTALLPATH)

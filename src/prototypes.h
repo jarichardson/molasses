@@ -14,7 +14,7 @@ int PULSE(Automata*,VentArr**,Inputs,FlowStats*);
 	        Vent Cell Count
 	*/
 
-int OUTPUT(DataCell**, Automata*, unsigned, char*, char, double*, const char*);
+int OUTPUT(Outputs, Inputs, DataCell**, Automata*, FlowStats, VentArr*);
 	/*args:
 		Global Grid,
 		Flow List,
@@ -37,7 +37,7 @@ unsigned ACTIVATE(DataCell**,Automata*,unsigned,unsigned,unsigned,char,char);
 		residual
 	*/
 
-int INIT_FLOW (DataCell***,Automata**,VentArr*,Inputs,FlowStats*,DataCell***);
+int INIT_FLOW (DataCell***,Automata**,VentArr*,Inputs*,FlowStats*,DataCell***);
 	/*args:
 		data array,
 		*active list,
@@ -70,6 +70,7 @@ int INITIALIZE(Inputs *, Outputs *, VentArr **);
 		Vent Array
 	*/
 
+int SIMULATION(DataCell**, Automata*, VentArr**, Inputs , FlowStats*);
 
 double *DEM_LOADER(char*, DataCell***,char*);
 	/*args: DEM file name, Null Global Data Grid pointer, Model Code*/

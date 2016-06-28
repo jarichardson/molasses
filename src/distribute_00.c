@@ -71,9 +71,11 @@ int DISTRIBUTE(DataCell **dataGrid, Automata *CAList, unsigned *activeCount,
 			                            );
 			
 			/*Check for Error flag (NEIGHBOR_ID returns <0 value)*/
+			if(neighborCount==-1) //OFF THE MAP Error.
+				return 2;
 			if(neighborCount<0) {
 				printf("ERROR [DISTRIBUTE]: Error flag returned from [NEIGHBOR_ID].\n");
-				return(-1);
+				return 1;
 			}
 			
 			
@@ -146,7 +148,7 @@ int DISTRIBUTE(DataCell **dataGrid, Automata *CAList, unsigned *activeCount,
 						/*Check for Error Flag (Active Count should never be 0 or less)*/
 						if(*activeCount<=0){
 							printf("\nError [DISTRIBUTE]: Error from [ACTIVATE]\n");
-							return(-1);
+							return 1;
 						}
 					} /*End IF neighbor cell is not yet active*/
 					
@@ -177,5 +179,5 @@ int DISTRIBUTE(DataCell **dataGrid, Automata *CAList, unsigned *activeCount,
 	} while(c <= *activeCount); /*Keep looping until all cells have been tested*/
 	
 	/*return 0 for a successful round of distribution.*/
-	return(0);
+	return 0;
 }

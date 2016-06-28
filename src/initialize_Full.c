@@ -91,19 +91,21 @@ int INITIALIZE(Inputs *In, /* Structure of input parmaeters */
 	In->max_residual = 0;
 	In->log_mean_residual = 0;
 	In->log_std_residual = 0;
-	In->min_pulse_volume = 0;
-	In->max_pulse_volume = 0;
-	In->min_total_volume = 0;
-	In->max_total_volume = 0;
-	In->log_mean_volume = 0;
-	In->log_std_volume = 0;
 	In->vent_count = 0;
 	In->runs = 1;
 	In->flows = 1;
+	In->dem_grid_data = NULL;
+	In->spd_grid_data = NULL;
+	In->dem_proj = NULL;
 	
 	/* Initialize output parmaeters */
 	Out->ascii_flow_file = NULL;
 	Out->ascii_hits_file = NULL;
+	Out->raster_hits_file = NULL;
+	Out->raster_flow_file = NULL;
+	Out->raster_post_topo = NULL;
+	Out->raster_pre_topo = NULL;
+	Out->stats_file = NULL;
 	
 	/***********************
 	   Create vent array
@@ -218,7 +220,7 @@ int INITIALIZE(Inputs *In, /* Structure of input parmaeters */
 			strncpy(Out->ascii_flow_file, value, strlen(value)+1);
 		}
 		
-		/*XY-HIT BINARY LIST, OUTPUT FILE*/
+		/*XY-HIT COUNT LIST, OUTPUT FILE*/
 		else if (!strncmp(var, "ASCII_HIT_LIST", strlen("ASCII_HIT_LIST"))) {
 			Out->ascii_hits_file = (char *)GC_MALLOC(((strlen(value)+1) * sizeof(char)));	
   			if (Out->ascii_hits_file == NULL) {
@@ -228,7 +230,75 @@ int INITIALIZE(Inputs *In, /* Structure of input parmaeters */
     			return 1;
     		}
 			strncpy(Out->ascii_hits_file, value, strlen(value)+1);
-		}		
+		}
+		
+		/*HIT COUNT RASTER, OUTPUT FILE*/
+		else if (!strncmp(var, "TIFF_HIT_MAP", strlen("TIFF_HIT_MAP"))) {
+			Out->raster_hits_file = (char *)GC_MALLOC(((strlen(value)+1) * sizeof(char)));	
+  			if (Out->raster_hits_file == NULL) {
+    			fprintf(stderr, 
+                        "Cannot malloc memory for TIFF_HIT_MAP:[%s]\n", 
+                        strerror(errno));
+    			return 1;
+    		}
+			strncpy(Out->raster_hits_file, value, strlen(value)+1);
+		}
+		
+		/*TIFF THICKNESS RASTER, OUTPUT FILE*/
+		else if (!strncmp(var, "TIFF_THICKNESS_MAP", strlen("TIFF_THICKNESS_MAP"))) {
+			Out->raster_flow_file = (char *)GC_MALLOC(((strlen(value)+1) * sizeof(char)));	
+  			if (Out->raster_flow_file == NULL) {
+    			fprintf(stderr, 
+                        "Cannot malloc memory for TIFF_HIT_MAP:[%s]\n", 
+                        strerror(errno));
+    			return 1;
+    		}
+			strncpy(Out->raster_flow_file, value, strlen(value)+1);
+		}
+		
+		/*TIFF PREFLOW ELEVATION RASTER, OUTPUT FILE*/
+		else if (!strncmp(var, "TIFF_ELEVATION_MAP", strlen("TIFF_ELEVATION_MAP"))) {
+			Out->raster_pre_topo = (char *)GC_MALLOC(((strlen(value)+1) * sizeof(char)));	
+  			if (Out->raster_pre_topo == NULL) {
+    			fprintf(stderr, 
+                        "Cannot malloc memory for TIFF_HIT_MAP:[%s]\n", 
+                        strerror(errno));
+    			return 1;
+    		}
+			strncpy(Out->raster_pre_topo, value, strlen(value)+1);
+		}
+		
+		/*TIFF POSTFLOW ELEVATION RASTER, OUTPUT FILE*/
+		else if (!strncmp(var, "TIFF_NEW_ELEV_MAP", strlen("TIFF_NEW_ELEV_MAP"))) {
+			Out->raster_post_topo = (char *)GC_MALLOC(((strlen(value)+1) * sizeof(char)));	
+  			if (Out->raster_post_topo == NULL) {
+    			fprintf(stderr, 
+                        "Cannot malloc memory for TIFF_HIT_MAP:[%s]\n", 
+                        strerror(errno));
+    			return 1;
+    		}
+			strncpy(Out->raster_post_topo, value, strlen(value)+1);
+		}
+		
+		/*STATISTICS METADATA FILE*/
+		else if (!strncmp(var, "STATS_FILE", strlen("STATS_FILE"))) {
+			Out->stats_file = (char *)GC_MALLOC(((strlen(value)+10) * sizeof(char)));	
+  			if (Out->stats_file == NULL) {
+    			fprintf(stderr, 
+                        "Cannot malloc memory for ascii_flow_map:[%s]\n", 
+                        strerror(errno));
+    			return 1;
+    		}
+			strncpy(Out->stats_file, value, strlen(value)+1);
+   		Opener = fopen(Out->stats_file, "w");
+			if (Opener == NULL) {
+				fprintf(stderr, 
+				        "\nERROR [INITIALIZE]: Failed to open stats file: [%s]:[%s]!\n",
+				        Out->stats_file, strerror(errno));
+				return 1;
+			}
+			(void)fclose(Opener);
+		}
 		
 		/***********************
 		    FLOW PARAMETERS
