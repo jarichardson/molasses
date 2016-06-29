@@ -3,7 +3,7 @@
 
 #MODULES: Alter as needed. 
 #Check docs/ for module codes and destriptions.
-export driver            = Full
+export driver            = Build
 export initialize        = Full
 export DEM_loader        = 00
 export flow_initializer  = Full
