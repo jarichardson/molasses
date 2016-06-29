@@ -128,7 +128,7 @@ int INITIALIZE(Inputs *In, /* Structure of input parmaeters */
 	(*Vents+In->vent_count)->min_pulsevolume     = 0;
 	(*Vents+In->vent_count)->max_pulsevolume     = 0;
 	
-	fprintf(stderr, "Reading in Parameters...\n");
+	fprintf(stdout, "Reading in Parameters...\n");
 	
 	/*open configuration file*/
 	ConfigFile = fopen(In->config_file, "r");
@@ -147,9 +147,9 @@ int INITIALIZE(Inputs *In, /* Structure of input parmaeters */
 		//print incoming parameter
 		sscanf (line,"%s = %s",var,value); //split line into before ' = ' and after
 		if (strncmp(var, "NEW_VENT", strlen("NEW_VENT"))) /*dont print if line=newvent*/
-			fprintf(stderr, "%25s = %-33s ",var, value); /*print incoming parameter value*/
-		else fprintf(stderr, "%20s (#%u)\n","NEW VENT",(In->vent_count+1+firstvent)); /*print new vent flag*/
-		fflush(stderr);
+			fprintf(stdout, "%25s = %-33s ",var, value); /*print incoming parameter value*/
+		else fprintf(stdout, "%20s (#%u)\n","NEW VENT",(In->vent_count+1+firstvent)); /*print new vent flag*/
+		fflush(stdout);
 		
 		/*INPUT FILES AND GLOBAL MODEL PARAMETERS**********************************/
 		/*INPUT DEM FILE*/
@@ -493,7 +493,8 @@ int INITIALIZE(Inputs *In, /* Structure of input parmaeters */
 			dval = strtod(value, &ptr);
 			if (dval > 0) (*Vents+In->vent_count)->log_std_totalvolume = dval;
 			else {
-				fprintf(stderr, "\n[INITIALIZE]: Unable to read value for LOG_STD_DEV_TOTAL_VOLUME\n");
+				fprintf(stderr, 
+				 "\n[INITIALIZE]: Unable to read value for LOG_STD_DEV_TOTAL_VOLUME\n");
 				return 1;
 			}
 		}
@@ -541,11 +542,11 @@ int INITIALIZE(Inputs *In, /* Structure of input parmaeters */
 			}
 		}
 		else {
-			fprintf (stderr, "[not assigned]\n");
+			fprintf (stdout, "[not assigned]\n");
 			continue;
 		}
 		if strncmp(line, "NEW_VENT", strlen("NEW_VENT"))
-			fprintf (stderr,"[assigned]\n");
+			fprintf (stdout,"[assigned]\n");
 	}
 
 	/****************************************************************************
@@ -566,7 +567,7 @@ int INITIALIZE(Inputs *In, /* Structure of input parmaeters */
 	//THE RESIDUAL either must be positive or -1 (file)
 
 	/*Check for missing parameters*/
-	fprintf(stderr, "Checking validity of parameter set ....\n");
+	fprintf(stdout, "Checking validity of parameter set ....\n");
 	
 	In->vent_count += firstvent; //Change vent_count from an index into a # of vents
 	
@@ -733,7 +734,7 @@ int INITIALIZE(Inputs *In, /* Structure of input parmaeters */
 		return 1;
 	}
 	
-	fprintf(stderr, "Parameter set is valid!\n");
+	fprintf(stdout, "Parameter set is valid!\n");
 	
 	(void) fclose(ConfigFile);
 	return 0;

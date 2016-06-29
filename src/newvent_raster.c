@@ -5,9 +5,6 @@
 #include <errno.h>
 #include "prototypes.h"
 
-#define CR 13            /* Decimal code of Carriage Return char */
-#define LF 10            /* Decimal code of Line Feed char */
-
 /*int CHOOSE_NEW_VENT(SpatialDensity *grid,
 	unsigned num_grids,
 	unsigned num_vents, 
@@ -30,7 +27,7 @@ int CHOOSE_NEW_VENT(Inputs *In, DataCell ***SpDens ,VentArr *Vent) {
 	
 	//If the Spatial Density Grid is NULL, declare it by loading in the SPD FILE
 	if (*SpDens==NULL) {
-		fprintf(stderr, "\nLoading Vent Spatial Density file...\n");
+		fprintf(stdout, "\nLoading Vent Spatial Density file...\n");
 		In->spd_grid_data = DEM_LOADER(In->spd_file,
 		                        SpDens,
 		                        "DENSITY"

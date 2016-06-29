@@ -30,8 +30,8 @@ Automata *NEIGHBOR_ID(Automata cCell, DataCell **grid, double *gridMetadata,
 	
 	/*Create the neighbor list array*/
 	if((neighborList = (Automata*)malloc(8 * sizeof(Automata)))==NULL) {
-		printf("\n[NEIGHBOR_ID]   No more memory while creating Neighbor List!!");
-		printf("  Exiting.\n");
+		fprintf(stderr, "\n[NEIGHBOR_ID]   No more memory while creating Neighbor List!!");
+		fprintf(stderr, "  Exiting.\n");
 		exit(0);
 	}
 	
@@ -55,19 +55,19 @@ Automata *NEIGHBOR_ID(Automata cCell, DataCell **grid, double *gridMetadata,
 		[5] n-s pixel resolution (negative value)
 	*/
 	if (dRow < 0) {
-		printf("\nFLOW IS OFF THE MAP! (South) [NEIGHBOR_ID]\n");
+		fprintf(stdout, "\nFLOW IS OFF THE MAP! (South) [NEIGHBOR_ID]\n");
 		*neighborCount = -1;
 		return(neighborList);
 	} else if (uRow >= gridMetadata[4]) {
-		printf("\nFLOW IS OFF THE MAP! (North) [NEIGHBOR_ID]\n");
+		fprintf(stdout, "\nFLOW IS OFF THE MAP! (North) [NEIGHBOR_ID]\n");
 		*neighborCount = -1;
 		return(neighborList);
 	} else if (lCol < 0) {
-		printf("\nFLOW IS OFF THE MAP! (West) [NEIGHBOR_ID]\n");
+		fprintf(stdout, "\nFLOW IS OFF THE MAP! (West) [NEIGHBOR_ID]\n");
 		*neighborCount = -1;
 		return(neighborList);
 	} else if (rCol >= gridMetadata[2]) {
-		printf("\nFLOW IS OFF THE MAP! (East) [NEIGHBOR_ID]\n");
+		fprintf(stdout, "\nFLOW IS OFF THE MAP! (East) [NEIGHBOR_ID]\n");
 		*neighborCount = -1;
 		return(neighborList);
 	}

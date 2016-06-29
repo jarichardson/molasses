@@ -52,7 +52,8 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	
 	phrase = (char *)GC_MALLOC_ATOMIC(((size_t)size * sizeof(char)));	
   	if (phrase == NULL) {
-    	fprintf(stderr, "Cannot malloc memory for seed phrase:[%s]\n", strerror(errno));
+    	fprintf(stderr, "Error: Cannot malloc memory for seed phrase:[%s]\n",
+    	        strerror(errno));
     	return 1;
     }
     snprintf(phrase, size, "%d", (int)startTime);
@@ -64,11 +65,11 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	/* Initialize all generators. */
   	set_initial_seed ( seed1, seed2 );
 	/*WELCOME USER TO SIMULATION AND CHECK FOR CORRECT USAGE*********************/
-	printf("\n\n               MOLASSES is a lava flow simulator.\n\n");
+	fprintf(stdout, "\n\n               MOLASSES is a lava flow simulator.\n\n");
 	
 	/*User must supply the name of the executable and a configuration file*/
 	if(argc<2) {
-		printf("Usage: %s config-filename\n",argv[0]);
+		fprintf(stderr, "Usage: %s config-filename\n",argv[0]);
 		return 1;
 	}
 	In.config_file = argv[1];
@@ -78,7 +79,7 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	}
 	else In.start = 0;
 	
-	printf("Beginning flow simulation...\n");
+	fprintf(stdout, "Beginning flow simulation...\n");
 	
 	/*MODULE: INITIALIZE*********************************************************/
 	/*        Assigns several empty variables based on a user-defined 
@@ -117,8 +118,8 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	                        );
 	/*Check for Error flag (DEM_LOADER returns a null metadata list)*/
 	if(In.dem_grid_data==NULL){
-		printf("\nError [MAIN]: Error flag returned from DEM_LOADER[TOPOG].\n");
-		printf("Exiting.\n");
+		fprintf(stderr, "\nError [MAIN]: Error flag returned from DEM_LOADER[TOPOG].\n");
+		fprintf(stderr, "Exiting.\n");
 		return(-1);
 	}
 	
@@ -143,8 +144,8 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	for (FlowParam.run = In.start; FlowParam.run < (In.runs + In.start); 
 	     FlowParam.run++) {
 		
-		fprintf(stderr, "\n______________________________________________________");
-		fprintf(stderr, "____________\n                         SIMULATION #%d\n\n",
+		fprintf(stdout, "\n______________________________________________________");
+		fprintf(stdout, "____________\n                         SIMULATION #%d\n\n",
 		                (FlowParam.run+1));
 		/*MODULE: INIT_FLOW**********************************************************/
 		/*        Creates Active Cellular Automata lists and activates vents in them.
@@ -163,8 +164,8 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 				           );
 		/*Check for Error flag (INIT_FLOW returns <0 value)*/
 		if(ret) {
-			printf("\nError [MAIN]: Error flag returned from [INIT_FLOW].\n");
-			printf("Exiting.\n");
+			fprintf(stderr, "\nError [MAIN]: Error flag returned from [INIT_FLOW].\n");
+			fprintf(stderr, "Exiting.\n");
 			return 1;
 		}
 		
@@ -173,7 +174,9 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 		                 CAList, 
 		                 &Vents, 
 		                 In, 
-		                 &FlowParam);
+		                 &FlowParam
+		                );
+		fprintf(stdout,"\n");
 		if (ret==2) {//OFF THE MAP ERROR
 			if (FlowParam.run == 0) {
 				//IF THE FLOW IS OFF THE MAP AND ITS THE FIRST FLOW, STILL OUTPUT THE 
@@ -187,12 +190,12 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 							       Vents
 							      );
 				if(ret){ /*Check for Error flag (OUTPUT returns !0 value)*/
-					printf("\nERROR [MAIN]: Error flag returned from [OUTPUT].\n");
-					printf("Exiting.\n");
+					fprintf(stderr, "\nERROR [MAIN]: Error flag returned from [OUTPUT].\n");
+					fprintf(stderr, "Exiting.\n");
 					return 1;
 				}
 			}
-			fprintf(stderr, "  Continuing to next flow.\n");
+			fprintf(stdout, "  Continuing to next flow.\n");
 			continue;
 		}
 		else if (ret) {
@@ -203,9 +206,10 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 		
 		/*POST FLOW WRAP UP**********************************************************/
 	
-		printf("\n                        Flow Complete!\n\n");
+		fprintf(stdout, "\n                        Flow Complete!\n\n");
 		/*Print out final number of inundated cells*/
-		printf("Final Count: %d cells inundated.\n", FlowParam.active_count);
+		fprintf(stdout, "Final Count: %d cells inundated.\n", 
+		        FlowParam.active_count);
 	
 	
 		/*POST FLOW WRAP UP: CONSERVATION OF MASS CHECK******************************/
@@ -221,13 +225,17 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 				             In.dem_grid_data[1] * In.dem_grid_data[5];
 	
 		/*print out volume delivered to vents and total volume now in cells*/
-		printf("Conservation of mass check\n");
+		
 		//printf(" Total (IN) volume pulsed from vents:   %0.3f\n",FlowParam.total_volume);
 		//printf(" Total (OUT) volume found in cells:     %0.3f\n",volumeErupted);
 		/*Double data types are precise to 1e-8, so make sure that volume IN and
 			volume OUT are within this precision.*/
-		if(abs(volumeErupted-FlowParam.total_volume)<=1e-8)
-			fprintf(stderr, " SUCCESS: MASS CONSERVED\n\n");
+		if(abs(volumeErupted-FlowParam.total_volume)<=1e-8) {
+			if (FlowParam.run == (In.runs + In.start-1)) {
+				fprintf(stdout, "Conservation of mass check (printed out for last flow)\n");
+				fprintf(stdout, " SUCCESS: MASS CONSERVED\n\n");
+			}
+		}
 		/*If volumes are significantly different (are more than Double Precision diff.
 			then mass is NOT conserved!!*/
 		else {
@@ -257,15 +265,15 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 			           Vents
 			          );
 		if(ret){ /*Check for Error flag (OUTPUT returns !0 value)*/
-			printf("\nERROR [MAIN]: Error flag returned from [OUTPUT].\n");
-			printf("Exiting.\n");
+			fprintf(stderr, "\nERROR [MAIN]: Error flag returned from [OUTPUT].\n");
+			fprintf(stderr, "Exiting.\n");
 			return 1;
 		}
 	
 	} /*END OF FOR (RUNS) LOOP                     */
 	
 	
-	fprintf(stderr, "\nModel Output:\n");
+	fprintf(stdout, "\nModel Output:\n");
 	/*MODULE: OUTPUT*************************************************************/
 	/*        Writes out model output to a file path.
 	          File Output types available, and their codes:
@@ -298,14 +306,14 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 	             Vents
 	            );
 	if(ret){ /*Check for Error flag (OUTPUT returns !0 value)*/
-		printf("\nERROR [MAIN]: Error flag returned from [OUTPUT].\n");
-		printf("Exiting.\n");
+		fprintf(stderr, "\nERROR [MAIN]: Error flag returned from [OUTPUT].\n");
+		fprintf(stderr, "Exiting.\n");
 		return 1;
 	}
 	
 	/*Calculate simulation time elapsed, and print it.*/
 	endTime = time(NULL);
-	printf("\nElapsed Time of simulation approximately %u seconds.\n\n",
+	fprintf(stdout, "\nElapsed Time of simulation approximately %u seconds.\n\n",
 	       (unsigned)(endTime - startTime));
 	
 	return(0);
@@ -330,10 +338,9 @@ DRIVER_00 is a VENT FLUX LIMITED flow scheme! The flow will end when all vents
 int SIMULATION(DataCell **dataGrid, Automata *CAList, VentArr **Vents, 
                Inputs In, FlowStats *FlowParam) {
 	int ret;
-
-	printf("\n                         Running Flow\n");
-
-
+	
+	fprintf(stdout, "\n                         Running Flow\n");
+	
 	/*Loop to call PULSE and DISTRIBUTE only if volume remains to be erupted*/
 	while(FlowParam->remaining_volume > 0) {
 		/*MODULE: PULSE************************************************************/
@@ -345,30 +352,27 @@ int SIMULATION(DataCell **dataGrid, Automata *CAList, VentArr **Vents,
 			          In,
 			          FlowParam
 			         );
-	
 		/*Check for Error flags (PULSE returns <0 or 0 value)*/
-		if(ret > 1) {
-			printf("\nERROR [MAIN]: Error flag returned from [PULSE].\n");
-			printf("Exiting.\n");
+		if(ret > 1) { // General Error
+			fprintf(stderr, "\nERROR [MAIN]: Error flag returned from [PULSE].\n");
+			fprintf(stderr, "Exiting.\n");
 			return 1;
 		}
 		else if (ret) {
 			if (FlowParam->remaining_volume) {
 				/*This return should not be possible, 
 					Pulse should return 0 if no volume remains*/
-				printf("\nERROR [MAIN]: Error between [PULSE] return and lava vol.\n");
-				printf("Exiting.\n");
+				fprintf(stderr, "\nERROR [MAIN]: Error between [PULSE] return and lava vol.\n");
+				fprintf(stderr, "Exiting.\n");
 				return 1;
 			}
 			/*If ret=1, PULSE was called even though there was no lava to distribute.
-				Do not call Pulse or Distribute anymore! Break out of While loop.     */
-			break;
+				Do not call Pulse or Distribute anymore! End flow (but not program).  */
+			return 0;
 		}
-		/*if Pulse module successfully updated vents, ret will > 0.
-			Continue, call Distribute module.*/
 	
 		/*Update status message on screen*/
-		fprintf(stderr,"\rInundated Cells: %-7d; Volume Remaining: %10.2f",
+		fprintf(stdout,"\rInundated Cells: %-7d; Volume Remaining: %10.2f",
 			     FlowParam->active_count, FlowParam->remaining_volume);
 	
 	
@@ -388,18 +392,12 @@ int SIMULATION(DataCell **dataGrid, Automata *CAList, VentArr **Vents,
 			return 2;
 		}
 		else if (ret) { // GENERAL ERROR, Stop program
-			printf("\nERROR [MAIN]: Error flag returned from [DISTRIBUTE].\n");
-			printf("Exiting.\n");
+			fprintf(stderr, "\nERROR [MAIN]: Error flag returned from [DISTRIBUTE].\n");
+			fprintf(stderr, "Exiting.\n");
 			return 1;
 		}
 	
-		/*If you want to output the flow at EVERY Pulse, here is a good place to do
-			it.
-			Increment pulse count, then rename the temporary file path.*/
-		//snprintf(tempFilename,15,"pulse_%04d.xyz",(++pulseCount));
-	
-	
-	} /*End while main flow loop: (while(volumeRemaining>0)and Flow Motion)*/
+	} /*End while remainingvolume loop (PULSE/DISTRIBUTE Loop)*/
 	
 	/*SUCCESSFUL SIMULATION*/
 	return 0;

@@ -316,9 +316,9 @@ int INIT_FLOW (DataCell ***dataGrid, Automata **CAList, VentArr *ventList,
 		
 		/*Print vent location to standard output*/
 		if (i==0) { /*Print first time a vent is loaded*/
-			fprintf(stderr, "\nVents Loaded into Lava Flow Active List:\n");
+			fprintf(stdout, "\nVents Loaded into Lava Flow Active List:\n");
 		}
-		fprintf(stderr, " #%u [%u][%u] %15.3f cu. m.\n",
+		fprintf(stdout, " #%u [%u][%u] %15.3f cu. m.\n",
 		        (i+1),ventRow,ventCol,(ventList+i)->totalvolume);
 		
 		/*Add current vent's volume to total volume in.*/
@@ -329,8 +329,8 @@ int INIT_FLOW (DataCell ***dataGrid, Automata **CAList, VentArr *ventList,
 	}
 	
 	/*Print total volume.*/
-	fprintf(stderr, "----------------------------------------\n");
-	fprintf(stderr, "Total Volume: %16.3f cu. m.\n", param->total_volume);
+	fprintf(stdout, "----------------------------------------\n");
+	fprintf(stdout, "Total Volume: %16.3f cu. m.\n", param->total_volume);
 	
 	//copy total volume to remaining volume
 	param->remaining_volume = param->total_volume;

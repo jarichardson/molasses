@@ -120,7 +120,7 @@ int OUTPUT(Outputs Out, Inputs In, DataCell **dataGrid, Automata *flowList,
 			/*Open flow file (x,y,thickness)*/
 			flowfile  = fopen(outputfilename, "w");
 			if (flowfile == NULL) {
-				printf("Cannot open FLOW file=[%s]:[%s]! Exiting.\n",
+				fprintf(stderr, "Cannot open FLOW file=[%s]:[%s]! Exiting.\n",
 				outputfilename, strerror(errno));
 				return 1;
 			}
@@ -135,8 +135,8 @@ int OUTPUT(Outputs Out, Inputs In, DataCell **dataGrid, Automata *flowList,
 							            dataGrid[flowList[i].row][flowList[i].col].residual));
 				}
 			fclose(flowfile);
-			fprintf(stderr,
-				     " ASCII   Output file: %s successfully written.\n (x,y,thickness)\n",
+			fprintf(stdout,
+				     " ASCII   Output file: %s successfully written.\n  (x,y,thickness)\n",
 				     outputfilename);
 	
 		break;
@@ -146,7 +146,7 @@ int OUTPUT(Outputs Out, Inputs In, DataCell **dataGrid, Automata *flowList,
 			/*Open hit file (x,y,hit count)*/
 			flowfile  = fopen(outputfilename, "w");
 			if (flowfile == NULL) {
-				printf("Cannot open HITS file=[%s]:[%s]! Exiting.\n",
+				fprintf(stderr, "Cannot open HITS file=[%s]:[%s]! Exiting.\n",
 				outputfilename, strerror(errno));
 				return 1;
 			}
@@ -160,8 +160,8 @@ int OUTPUT(Outputs Out, Inputs In, DataCell **dataGrid, Automata *flowList,
 							   (unsigned) (dataGrid[flowList[i].row][flowList[i].col].hit_count));
 				}
 			fclose(flowfile);
-			fprintf(stderr,
-				     " ASCII   Output file: %s successfully written.\n (x,y,hit count)\n",
+			fprintf(stdout,
+				     " ASCII   Output file: %s successfully written.\n  (x,y,hit count)\n",
 				     outputfilename);
 		break;
 	
@@ -209,7 +209,7 @@ int OUTPUT(Outputs Out, Inputs In, DataCell **dataGrid, Automata *flowList,
 			GDALClose( hDstDS );
 			free(RasterDataU);
 		
-			printf(" %s Output file: %s successfully written.\n",
+			fprintf(stdout, " %s Output file: %s successfully written.\n",
 				  	   GDALGetDriverLongName( hDriver ),outputfilename);
 		
 		break;
@@ -220,7 +220,8 @@ int OUTPUT(Outputs Out, Inputs In, DataCell **dataGrid, Automata *flowList,
 			/*Create Data Block*/
 			if((RasterDataF = malloc (sizeof (float) * In.dem_grid_data[2] *
 						                    In.dem_grid_data[4]))==NULL) {
-				printf("[OUTPUT] Out of Memory creating Outgoing Raster Data Array\n");
+				fprintf(stderr, 
+				        "[OUTPUT] Out of Memory creating Outgoing Raster Data Array\n");
 				return(-1);
 			}
 		
@@ -246,7 +247,8 @@ int OUTPUT(Outputs Out, Inputs In, DataCell **dataGrid, Automata *flowList,
 			/*Create Data Block*/
 			if((RasterDataF = malloc (sizeof (float) * In.dem_grid_data[2] *
 						                    In.dem_grid_data[4]))==NULL) {
-				printf("[OUTPUT] Out of Memory creating Outgoing Raster Data Array\n");
+				fprintf(stderr,
+				        "[OUTPUT] Out of Memory creating Outgoing Raster Data Array\n");
 				return(-1);
 			}
 		
@@ -266,7 +268,8 @@ int OUTPUT(Outputs Out, Inputs In, DataCell **dataGrid, Automata *flowList,
 			/*Create Data Block*/
 			if((RasterDataF = malloc (sizeof (float) * In.dem_grid_data[2] *
 						                    In.dem_grid_data[4]))==NULL) {
-				printf("[OUTPUT] Out of Memory creating Outgoing Raster Data Array\n");
+				fprintf(stderr,
+				        "[OUTPUT] Out of Memory creating Outgoing Raster Data Array\n");
 				return(-1);
 			}
 		
@@ -288,8 +291,8 @@ int OUTPUT(Outputs Out, Inputs In, DataCell **dataGrid, Automata *flowList,
 			if (!FlowParam.run) flowfile  = fopen(outputfilename, "w");
 			else flowfile  = fopen(outputfilename, "a");
 			if (flowfile == NULL) {
-				printf("Cannot open stats file=[%s]:[%s]! Exiting.\n",
-				outputfilename, strerror(errno));
+				fprintf(stderr, "Cannot open stats file=[%s]:[%s]! Exiting.\n",
+				        outputfilename, strerror(errno));
 				return 1;
 			}
 			
@@ -319,7 +322,7 @@ int OUTPUT(Outputs Out, Inputs In, DataCell **dataGrid, Automata *flowList,
 			}
 			
 			fclose(flowfile);
-			fprintf(stderr,
+			fprintf(stdout,
 				     " STATS   Output file: %s successfully written.\n",
 				     outputfilename);
 		break;
@@ -349,7 +352,7 @@ int OUTPUT(Outputs Out, Inputs In, DataCell **dataGrid, Automata *flowList,
 			GDALClose( hDstDS );
 			free(RasterDataF);
 		
-			printf(" %s Output file: %s successfully written.\n",
+			fprintf(stdout, " %s Output file: %s successfully written.\n",
 				     GDALGetDriverLongName( hDriver ),outputfilename);
 	
 	

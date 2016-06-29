@@ -25,6 +25,7 @@ unsigned ACTIVATE(DataCell **dataGrid, Automata *CAList, unsigned row,
 	if(!dataGrid[row][col].active) {
 		
 		aCt++;
+		//update CAList
 		dataGrid[row][col].active = (unsigned) aCt;
 		
 		(CAList+aCt)->row       = row;
