@@ -727,7 +727,7 @@ int INITIALIZE(Inputs *In, /* Structure of input parmaeters */
 	}
 	
 	if(!In->elev_uncert) { /*Elevation uncertainty is either missing or is 0.*/
-		fprintf(stderr, "  ELEVATION UNCERTAINTY = 0: DEM values are assumed to be true.\n");
+		fprintf(stdout, "  ELEVATION UNCERTAINTY = 0: DEM values are assumed to be true.\n");
 	}
 	else if ((In->elev_uncert < 0)  && (In->elev_uncert != -1)) {
 		fprintf(stderr, "\nERROR [INITIALIZE]: DEM Error Uncertainty <= 0!!\n");

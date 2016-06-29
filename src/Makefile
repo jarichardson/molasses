@@ -10,6 +10,7 @@ endif
 
 SRCS = driver_$(driver).c initialize_$(initialize).c \
 	demloader_$(DEM_loader).c initflow_$(flow_initializer).c \
+	simulation_$(simulation).c \
 	pulse_$(pulse).c distribute_$(distribute).c \
 	neighbor_$(neighbor_ID).c activate_$(activate).c \
 	newvent_$(choose_new_vent).c output_$(output).c
