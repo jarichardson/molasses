@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <float.h>
 #include <string.h>
+#include <ctype.h>
 
 /*Active Cells*/
 typedef struct Automata {
