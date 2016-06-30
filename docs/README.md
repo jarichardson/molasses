@@ -74,6 +74,14 @@ If Total Flow Volume and/or Residual Flow Thicknesses should be modeled as log-n
 ### Summary Parameter Table
 **Elevation Map Parameters**
 
+| Left-aligned | Center-aligned | Right-aligned |
+| :---         |     :---:      |          ---: |
+| git status   | git status     | git status    |
+| git diff     | git diff       | git diff      |
+
+does that work?
+
+
 | Parameter                       | Single Flow | Probabilistic | Probabilistic |
 |                                |             | Single Flow   | Flow Field    |
 | --- | :-----------: | :-------------: | :-------------: |
