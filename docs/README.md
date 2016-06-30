@@ -73,12 +73,14 @@ If Total Flow Volume and/or Residual Flow Thicknesses should be modeled as log-n
 
 ### Summary Parameter Table
 **Elevation Map Parameters**
+
 | Parameter | Single Flow | Probabilistic Single Flow | Probabilistic Flow Field |
 | --- | :---: | :---: | :---: |
 | DEM\_FILE | Required    | Required      | Required      |
 | ELEVATION\_UNCERT | Not suggested |   Optional    | Optional  |
 
 **Output Parameters**
+
 | Parameter | Single Flow | Probabilistic Single Flow | Probabilistic Flow Field |
 | --- | :---: | :---: | :---: |
 | ASCII\_THICKNESS\_LIST          | USE         |               |               |
@@ -89,6 +91,7 @@ If Total Flow Volume and/or Residual Flow Thicknesses should be modeled as log-n
 | TIFF\_NEW\_ELEV\_MAP            |             |               | AT LEAST 1    |
 
 **Determined Flow Parameters**
+
 | Parameter | Single Flow | Probabilistic Single Flow | Probabilistic Flow Field |
 | --- | :---: | :---: | :---: |
 | RESIDUAL\_THICKNESS             | Required    | Optional      | Do Not Use    |
@@ -99,20 +102,21 @@ If Total Flow Volume and/or Residual Flow Thicknesses should be modeled as log-n
 | VENT\_TOTAL\_VOLUME             | Required    | Optional      | Do Not Use    |
 
 **Probabilistic Parameters**
+
 | Parameter | Single Flow | Probabilistic Single Flow | Probabilistic Flow Field |
 | --- | :---: | :---: | :---: |
-| SIMULATIONS                     | Do Not Use  | Required      | Required      |
-| VENT\_SPATIAL\_DENSITY\_FILE    | Do Not Use  | Do Not Use    | Required      |
-| MIN\_RESIDUAL                   | Do Not Use  | Optional      | Required      |
-| MAX\_RESIDUAL                   | Do Not Use  | Optional      | Required      |
-| LOG\_MEAN\_RESIDUAL             | Do Not Use  | Optional      | Optional      |
-| LOG\_STD\_DEV\_RESIDUAL         | Do Not Use  | Optional      | Optional      |
-| MIN\_TOTAL\_VOLUME              | Do Not Use  | Optional      | Required      |
-| MAX\_TOTAL\_VOLUME              | Do Not Use  | Optional      | Required      |
-| LOG\_MEAN\_TOTAL\_VOLUME        | Do Not Use  | Optional      | Optional      |
-| LOG\_STD\_DEV\_TOTAL\_VOLUME    | Do Not Use  | Optional      | Optional      |
-| MIN\_PULSE\_VOLUME              | Do Not Use  | Optional      | Required      |
-| MAX\_PULSE\_VOLUME              | Do Not Use  | Optional      | Required      |
+| SIMULATIONS                     | Do Not Use | Required | Required |
+| VENT\_SPATIAL\_DENSITY\_FILE    | Do Not Use | Do Not Use | Required |
+| MIN\_RESIDUAL                   | Do Not Use | Optional | Required |
+| MAX\_RESIDUAL                   | Do Not Use | Optional | Required |
+| LOG\_MEAN\_RESIDUAL             | Do Not Use | Optional | Optional |
+| LOG\_STD\_DEV\_RESIDUAL         | Do Not Use | Optional | Optional |
+| MIN\_TOTAL\_VOLUME              | Do Not Use | Optional | Required |
+| MAX\_TOTAL\_VOLUME              | Do Not Use | Optional | Required |
+| LOG\_MEAN\_TOTAL\_VOLUME        | Do Not Use | Optional | Optional |
+| LOG\_STD\_DEV\_TOTAL\_VOLUME    | Do Not Use | Optional | Optional |
+| MIN\_PULSE\_VOLUME              | Do Not Use | Optional | Required |
+| MAX\_PULSE\_VOLUME              | Do Not Use | Optional | Required |
 
 ### How the Initialize Module uses Parameters
 IF NEW\_VENT is selected at least once, the Vent Probability Map will not be used
