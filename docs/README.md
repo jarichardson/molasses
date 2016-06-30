@@ -74,23 +74,14 @@ If Total Flow Volume and/or Residual Flow Thicknesses should be modeled as log-n
 ### Summary Parameter Table
 **Elevation Map Parameters**
 
-| Left-aligned | Center-aligned | Right-aligned |
-| :---         |     :---:      |          ---: |
-| git status   | git status     | git status    |
-| git diff     | git diff       | git diff      |
-
-does that work?
-
-
 | Parameter | Single Flow | Probabilistic Single Flow | Probabilistic Flow Field |
 | --- | :---: | :---: | :---: |
 | DEM\_FILE | Required    | Required      | Required      |
-| ELEVATION\_UNCERT | Not suggested |   Optional    | Optional      |
+| ELEVATION\_UNCERT | Not suggested |   Optional    | Optional  |
 
 **Output Parameters**
-|Parameter                       | Single Flow | Probabilistic | Probabilistic |
-|                                |             | Single Flow   | Flow Field    |
-|--------------------------------|:-----------:|:-------------:|:-------------:|
+| Parameter | Single Flow | Probabilistic Single Flow | Probabilistic Flow Field |
+| --- | :---: | :---: | :---: |
 |ASCII\_THICKNESS\_LIST          | USE         |               |               |
 |ASCII\_HIT\_LIST                |             | IF            |               |
 |TIFF\_HIT\_MAP                  |             |               | NEEDED        |
@@ -99,9 +90,8 @@ does that work?
 |TIFF\_NEW\_ELEV\_MAP            |             |               | AT LEAST 1    |
 
 **Determined Flow Parameters**
-|Parameter                       | Single Flow | Probabilistic | Probabilistic |
-|                                |             | Single Flow   | Flow Field    |
-|--------------------------------|:-----------:|:-------------:|:-------------:|
+| Parameter | Single Flow | Probabilistic Single Flow | Probabilistic Flow Field |
+| --- | :---: | :---: | :---: |
 |RESIDUAL\_THICKNESS             | Required    | Optional      | Do Not Use    |
 |NEW\_VENT                       | Required    | Required      | Do Not Use    |
 |VENT\_EASTING                   | Required    | Required      | Do Not Use    |
@@ -110,9 +100,8 @@ does that work?
 |VENT\_TOTAL\_VOLUME             | Required    | Optional      | Do Not Use    |
 
 **Probabilistic Parameters**
-|Parameter                       | Single Flow | Probabilistic | Probabilistic |
-|                                |             | Single Flow   | Flow Field    |
-|--------------------------------|:-----------:|:-------------:|:-------------:|
+| Parameter | Single Flow | Probabilistic Single Flow | Probabilistic Flow Field |
+| --- | :---: | :---: | :---: |
 |SIMULATIONS                     | Do Not Use  | Required      | Required      |
 |VENT\_SPATIAL\_DENSITY\_FILE    | Do Not Use  | Do Not Use    | Required      |
 |MIN\_RESIDUAL                   | Do Not Use  | Optional      | Required      |
