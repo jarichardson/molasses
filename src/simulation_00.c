@@ -6,7 +6,15 @@ int SIMULATION(DataCell **dataGrid, Automata *CAList, VentArr **Vents,
 	/*MAIN FLOW LOOP: PULSE LAVA AND DISTRIBUTE TO CELLS*************************/
 	/****************************************************************************/
 
-	int ret;
+	int i, ret;
+	unsigned PulseCount = 0;
+	unsigned PrintCount = 1; //minimum # of pulses to print
+	
+	//only print up to 1000 statuses after the pulse loop.
+	for (i=0; i < FlowParam->vent_count; i++) {
+		if (PrintCount < (unsigned) (*Vents+i)->totalvolume/(*Vents+i)->pulsevolume/1000)
+			PrintCount = (unsigned) (*Vents+i)->totalvolume/(*Vents+i)->pulsevolume/1000;
+	}
 	
 	fprintf(stdout, "\n                         Running Flow\n");
 	
@@ -41,8 +49,9 @@ int SIMULATION(DataCell **dataGrid, Automata *CAList, VentArr **Vents,
 		}
 	
 		/*Update status message on screen*/
-		fprintf(stdout,"\rInundated Cells: %-7d; Volume Remaining: %10.2f",
-			     FlowParam->active_count, FlowParam->remaining_volume);
+		if ((++PulseCount)%PrintCount == 0)
+			fprintf(stdout,"\rInundated Cells: %-7d; Volume Remaining: %10.2f",
+			        FlowParam->active_count, FlowParam->remaining_volume);
 	
 	
 		/*MODULE: DISTRIBUTE*******************************************************/
