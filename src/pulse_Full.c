@@ -43,18 +43,25 @@ int PULSE(Automata *actList, VentArr **Vents, Inputs In, FlowStats *param){
 				/*Decrease Pulse volume to Total Remaining lava volume at vent if 
 				    Remaining lava is less than the Pulse Volume*/
 				if ((*Vents+currentVent)->pulsevolume >
-				    (*Vents+currentVent)->remainingvolume)
-					(*Vents+currentVent)->pulsevolume = (*Vents+currentVent)->remainingvolume;
+				    (*Vents+currentVent)->remainingvolume) {
+				 	//Calculate thickness of lava to deliver w/ remaining volume
+					pulseThickness = (*Vents+currentVent)->remainingvolume / 
+						                (In.dem_grid_data[1] * In.dem_grid_data[5]);
+					/*Subtract vent's pulse from vent's total magma budget*/
+					(*Vents+currentVent)->remainingvolume = 0;
+				}
+				else {
+					//Calculate thickness of lava to deliver w/ pulse volume
+					pulseThickness = (*Vents+currentVent)->pulsevolume / 
+						                (In.dem_grid_data[1] * In.dem_grid_data[5]);
+					/*Subtract vent's pulse from vent's total magma budget*/
+					(*Vents+currentVent)->remainingvolume -= (*Vents+currentVent)->pulsevolume;
+				}
 				
-				/*Calculate thickness of lava to deliver based on pulse volume and
-				    grid resolution*/
-				pulseThickness = (*Vents+currentVent)->pulsevolume / 
-				                  (In.dem_grid_data[1] * In.dem_grid_data[5]);
 				(actList+i)->thickness += pulseThickness;
 				(actList+i)->elev      += pulseThickness;
 				
-				/*Subtract vent's pulse from vent's total magma budget*/
-				(*Vents+currentVent)->remainingvolume -= (*Vents+currentVent)->pulsevolume;
+				
 				
 				/*Move vent counter to next vent*/
 				currentVent++;

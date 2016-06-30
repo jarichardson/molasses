@@ -189,7 +189,7 @@ Automata *NEIGHBOR_ID(Automata cCell, DataCell **grid, double *gridMetadata,
 	if(!(parents & (1 << 5))) { 
 	/*if 5th parent bit False, LEFT-DOWNWARD cell is not parent: Continue*/
 		
-		active = grid[cRow][rCol].active; //This is 0 if the SW neighbor is inactive
+		active = grid[dRow][lCol].active; //This is 0 if the SW neighbor is inactive
 		if(!active) {
 		/*if L-D-WARD cell is inactive in Global Grid, use grid elevation value*/
 			if(cCell.elev > grid[dRow][lCol].elev) {
@@ -215,7 +215,7 @@ Automata *NEIGHBOR_ID(Automata cCell, DataCell **grid, double *gridMetadata,
 	if(!(parents & (1 << 4))) { 
 	/*if 4th parent bit False, RIGHT-DOWNWARD cell is not parent: Continue*/
 		
-		active = grid[cRow][rCol].active; //This is 0 if the SE neighbor is inactive
+		active = grid[dRow][rCol].active; //This is 0 if the SE neighbor is inactive
 		if(!active) {
 		/*if R-D-WARD cell is inactive in Global Grid, use grid elevation value*/
 			if(cCell.elev > grid[dRow][rCol].elev) {
@@ -241,7 +241,7 @@ Automata *NEIGHBOR_ID(Automata cCell, DataCell **grid, double *gridMetadata,
 	if(!(parents & (1 << 7))) { 
 	/*if 7th parent bit False, RIGHT-UPWARD cell is not parent: Continue*/
 		
-		active = grid[cRow][rCol].active; //This is 0 if the NE neighbor is inactive
+		active = grid[uRow][rCol].active; //This is 0 if the NE neighbor is inactive
 		if(!active) {
 		/*if R-U-WARD cell is inactive in Global Grid, use grid elevation value*/
 			if(cCell.elev > grid[uRow][rCol].elev) {
@@ -268,7 +268,7 @@ Automata *NEIGHBOR_ID(Automata cCell, DataCell **grid, double *gridMetadata,
 	if(!(parents & (1 << 6))) { 
 	/*if 6th parent bit False, LEFT-UPWARD cell is not parent: Continue*/
 		
-		active = grid[cRow][rCol].active; //This is 0 if the NW neighbor is inactive
+		active = grid[uRow][lCol].active; //This is 0 if the NW neighbor is inactive
 		if(!active) {
 		/*if L-U-WARD cell is inactive in Global Grid, use grid elevation value*/
 			if(cCell.elev > grid[uRow][lCol].elev) {

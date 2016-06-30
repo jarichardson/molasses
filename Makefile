@@ -3,13 +3,13 @@
 
 #MODULES: Alter as needed. 
 #Check docs/ for module codes and destriptions.
-export driver            = Build
+export driver            = Full
 export initialize        = Full
 export DEM_loader        = 00
 export flow_initializer  = Full
 export simulation        = 00
 export pulse             = Full
-export distribute        = Slope
+export distribute        = SlopeBlind
 export neighbor_ID       = 8
 export activate          = Par
 export output            = Full
