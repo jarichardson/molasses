@@ -73,11 +73,12 @@ If Total Flow Volume and/or Residual Flow Thicknesses should be modeled as log-n
 
 ### Summary Parameter Table
 **Elevation Map Parameters**
-|Parameter                       | Single Flow | Probabilistic | Probabilistic |
+
+| Parameter                       | Single Flow | Probabilistic | Probabilistic |
 |                                |             | Single Flow   | Flow Field    |
-|--------------------------------|:-----------:|:-------------:|:-------------:|
-|DEM\_FILE                       | Required    | Required      | Required      |
-|ELEVATION\_UNCERT               |Not suggested|   Optional    | Optional      |
+| -------------------------------- | :-----------: | :-------------: | :-------------: |
+| DEM\_FILE                       | Required    | Required      | Required      |
+| ELEVATION\_UNCERT               | Not suggested|   Optional    | Optional      |
 
 **Output Parameters**
 |Parameter                       | Single Flow | Probabilistic | Probabilistic |
