@@ -3,7 +3,11 @@
 
 There are a few variables that can be used or ignored to create different kinds of MOLASSES models. The kind of simulation you want to run and your desired outputs will dictate which variables you set and in what way. Follow this guide to choose the parameters you want to use in the configuration file.
 
-### Using Parameters for Given Scenarios
+ 1. [Requirements for different model scenarios](#scenarios)
+ 1. [Tables of Parameters and whether to use them](#summarytables)
+ 1. [How the INITIALIZE (Full) Module chooses parameters](#initializemodule)
+
+### <a name="scenarios"></a>Using Parameters for Given Scenarios
 When a lava flow simulation is run (through the PULSE and DISTRIBUTE modules), the model needs to know 
  1. the elevation map
  2. the residual flow thickness
@@ -71,7 +75,7 @@ If Total Flow Volume and/or Residual Flow Thicknesses should be modeled as log-n
  * LOG\_MEAN\_TOTAL\_VOLUME
  * LOG\_STD\_DEV\_TOTAL\_VOLUME
 
-### Summary Parameter Table
+### <a name="summarytables"></a> Summary Parameter Table
 **Elevation Map Parameters**
 
  | Parameter | Single Flow | Probabilistic Single Flow | Probabilistic Flow Field |
@@ -89,6 +93,7 @@ If Total Flow Volume and/or Residual Flow Thicknesses should be modeled as log-n
 | TIFF\_THICKNESS\_MAP            | MUST        |               |               |
 | TIFF\_ELEVATION\_MAP            |             | CHOOSE        |               |
 | TIFF\_NEW\_ELEV\_MAP            |             |               | AT LEAST 1    |
+| STATS\_FILE | Optional | Optional | Optional |
 
 **Determined Flow Parameters**
 
@@ -105,7 +110,7 @@ If Total Flow Volume and/or Residual Flow Thicknesses should be modeled as log-n
 
 | Parameter | Single Flow | Probabilistic Single Flow | Probabilistic Flow Field |
 | --- | :---: | :---: | :---: |
-| SIMULATIONS                     | Do Not Use | Required | Required |
+| SIMULATIONS                     | Do Not Use | Required (>1) | Required (>1) |
 | VENT\_SPATIAL\_DENSITY\_FILE    | Do Not Use | Do Not Use | Required |
 | MIN\_RESIDUAL                   | Do Not Use | Optional | Required |
 | MAX\_RESIDUAL                   | Do Not Use | Optional | Required |
@@ -118,11 +123,17 @@ If Total Flow Volume and/or Residual Flow Thicknesses should be modeled as log-n
 | MIN\_PULSE\_VOLUME              | Do Not Use | Optional | Required |
 | MAX\_PULSE\_VOLUME              | Do Not Use | Optional | Required |
 
-### How the Initialize Module uses Parameters
-IF NEW\_VENT is selected at least once, the Vent Probability Map will not be used
+### <a name="initializemodule"></a> How the Initialize Module uses Parameters
+IF the SIMULATIONS variable is set to 1 or omitted from the configuration file:  
+ * Determined Parameters (NEW\_VENT, VENT\_*, RESIDUAL\_THICKNESS) are required.
 
-IF the SIMULATIONS are set to 1, the RESIDUAL\_THICKNESS and VENT\_TOTAL\_VOLUME variables will be used
+IF the SIMULATIONS variable is set to greater than 1 and NEW\_VENT is selected at least once: 
+ * The Vent Probability Map will not be used
+ * Vent(s) Location variables VENT\_EASTING, VENT\_NORTHING are required
+ * Probabilistic parameters will be preferred over Determined parameters (i.e., if probabilistic parameters are set, determined parameters will be reset)
+ 
+IF the SIMULATIONS variable is set to greater than 1 and NEW\_VENT is omitted in the configuration file:
+ * A Vent Probability Map is required
+ * Minimum/Maximum Flow parameters are required
+ * Determined flow parameters will not be used
 
-IF the SIMULATIONS are set to >1, Probabilistic variables for residual thickness and total volume will be preferred over deterministic variables, but deterministic values may still be used if probabilistic values are not provided
-
-IF NEW\_VENT is never called, the Vent Probability Map will be used as well as probabilistic variables
