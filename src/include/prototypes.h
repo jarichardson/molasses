@@ -1,6 +1,6 @@
 #include "structs.h"  /* Global Structures and Variables*/
-#include "gdal.h"     /* GDAL */
-#include "cpl_conv.h" /* GDAL for CPLMalloc() */
+#include <gdal.h>     /* GDAL */
+#include <cpl_conv.h> /* GDAL for CPLMalloc() */
 #include <gc.h>
 #include <ranlib.h>
 #include <rnglib.h>

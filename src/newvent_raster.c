@@ -1,8 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <errno.h>
 #include "prototypes.h"
 
 /*int CHOOSE_NEW_VENT(SpatialDensity *grid,

@@ -31,7 +31,7 @@ $(MAIN): $(OBJ)
 %.o : %.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c $<  -o $@
 
-$(OBJ): structs.h prototypes.h
+$(OBJ): include/structs.h include/prototypes.h
 
 check: all
 	@echo "Testing for conservation of mass..."
