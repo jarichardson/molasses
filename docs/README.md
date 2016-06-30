@@ -82,11 +82,10 @@ If Total Flow Volume and/or Residual Flow Thicknesses should be modeled as log-n
 does that work?
 
 
-| Parameter                       | Single Flow | Probabilistic | Probabilistic |
-|                                |             | Single Flow   | Flow Field    |
-| --- | :-----------: | :-------------: | :-------------: |
-| DEM\_FILE                       | Required    | Required      | Required      |
-| ELEVATION\_UNCERT               | Not suggested|   Optional    | Optional      |
+| Parameter | Single Flow | Probabilistic Single Flow | Probabilistic Flow Field |
+| --- | :---: | :---: | :---: |
+| DEM\_FILE | Required    | Required      | Required      |
+| ELEVATION\_UNCERT | Not suggested |   Optional    | Optional      |
 
 **Output Parameters**
 |Parameter                       | Single Flow | Probabilistic | Probabilistic |
