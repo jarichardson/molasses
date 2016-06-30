@@ -26,9 +26,9 @@ You may need to be in super-user mode to perform make install.
 
 To run the code after installation, use the command
 
-		molasses <config-file>
+		molasses <config-file> <starting simulation count>
 
-where \<config-file\> is a text configuration file. A sample configuration file (sample.cfg) is given in the main directory. An elevation model is required to run molasses, and at least one output file path and one vent location must be given in the configuration file. More information is documented in the docs directory.
+where `<config-file>` is a text configuration file. Sample configuration files (sample_*.cfg) are given in the main directory. `<starting simulation count>` is optional, but might be useful if MOLASSES output needs to avoid overwriting previous output. An elevation model is required to run molasses, and at least one output file path and one vent location must be given in the configuration file. More information is documented in the docs directory.
 
 ##### Sample Configuration File
 
@@ -36,14 +36,16 @@ where \<config-file\> is a text configuration file. A sample configuration file 
 	ELEVATION_UNCERT = 0
 	
 	#Output
-	OUTFILE_A_THICKNESS = this-is/an-ascii-list-of-inundated-cells.tsv
-	#OUTFILE_R_HITMAP = this-is/a-binary-raster-map-of-inundation.tif
-	#OUTFILE_R_THICKNESS = this-is/a-raster-map-of-flow-thickness.tif
-	#OUTFILE_R_ELEVATION = this-is/a-raster-map-of-the-preflow-DEM.tif
-	#OUTFILE_R_NEW_ELEV = this-is/a-raster-map-of-the-post-flow-DEM.tif
+	ASCII_THICKNESS_LIST = flow.xyz
+	#ASCII_HIT_LIST = hits.xyz
+	#TIFF_HIT_MAP = hits.tif
+	TIFF_THICKNESS_MAP = thickness.tif
+	#TIFF_ELEVATION_MAP = paleosurface.tif
+	#TIFF_NEW_ELEV_MAP = new_elev.tif
+	#STATS_FILE = stats.dat
 	
 	#Model Parameters
-	MODAL_THICKNESS = 1
+	RESIDUAL_THICKNESS = 1
 	
 	NEW_VENT
 	VENT_EASTING = 650
